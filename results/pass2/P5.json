@@ -1,0 +1,43 @@
+{
+ "P5_goethals_18.1": {
+  "published_sigma": 1.5,
+  "rho_q": 0.026019994116121044,
+  "n_holes": 4500,
+  "mean_cd": 25.98979195990855,
+  "sigma_cd": 1.1181124327474856,
+  "lcdu_3s": 3.3543372982424566,
+  "p_missing": 0.0,
+  "p_merged": 0.0
+ },
+ "P5_goethals_19.4": {
+  "published_sigma": 1.2,
+  "rho_q": 0.02832895910582528,
+  "n_holes": 4500,
+  "mean_cd": 26.039095784462464,
+  "sigma_cd": 1.1013810016441141,
+  "lcdu_3s": 3.3041430049323424,
+  "p_missing": 0.0,
+  "p_merged": 0.0
+ },
+ "P5_goethals_26.3": {
+  "published_sigma": 1.1,
+  "rho_q": 0.0402444282570902,
+  "n_holes": 4500,
+  "mean_cd": 26.060875712561813,
+  "sigma_cd": 1.0097796365248821,
+  "lcdu_3s": 3.0293389095746464,
+  "p_missing": 0.0,
+  "p_merged": 0.0
+ },
+ "P5_goethals_31.7": {
+  "published_sigma": 1.1,
+  "rho_q": 0.04881057952413104,
+  "n_holes": 4500,
+  "mean_cd": 26.04895889372615,
+  "sigma_cd": 0.9378294446588774,
+  "lcdu_3s": 2.813488333976632,
+  "p_missing": 0.0,
+  "p_merged": 0.0
+ },
+ "_runtime_s": 82.83059310913086
+}

@@ -1,0 +1,23 @@
+{
+ "P3_asml_hexP40_2018_hexapole": {
+  "published_lcdu": 2.7,
+  "rho_q": 0.05351705457596774,
+  "n_holes": 6000,
+  "mean_cd": 20.012025783291175,
+  "sigma_cd": 1.3161403186804028,
+  "lcdu_3s": 3.9484209560412085,
+  "p_missing": 0.0,
+  "p_merged": 0.0
+ },
+ "P3_asml_hexP40_2021_hexapole": {
+  "published_lcdu": 2.0,
+  "rho_q": 0.04296638630753662,
+  "n_holes": 6000,
+  "mean_cd": 19.99972464181677,
+  "sigma_cd": 1.4026522589823827,
+  "lcdu_3s": 4.207956776947148,
+  "p_missing": 0.0,
+  "p_merged": 0.0
+ },
+ "_runtime_s": 31.89483642578125
+}

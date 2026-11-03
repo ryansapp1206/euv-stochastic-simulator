@@ -5,6 +5,8 @@ G: ASML CAR progress at P40 hexagonal CH: LCDU 2.7/2.2/2.1/2.0 nm at 66/65/61/53
    Approximated as a staggered array 40 x 35 nm (near-hexagonal), annular illumination.
 H: Wang 2019 interference lithography re-test with an interference image and a 25 nm film.
 I: van Ingen Schenau 2013, NXE:3300: 24 nm HP regular CH, LCDU 3.2 nm (small annular, 31 mJ/cm2)."""
+import os
+RESULTS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "results")
 import json, time
 from dataclasses import replace
 import numpy as np
@@ -36,5 +38,5 @@ p = dose_to_size(Params(cd_target=24, pitch_x=48, pitch_y=48, dose=31, illuminat
 log("I_vanIngenSchenau2013_24hp_small_annular", dict(published_lcdu=3.2, rho_q=p.rho_q, **run(p)))
 
 out["_runtime_s"] = time.time() - t0
-json.dump(out, open("../results/extra_checks.json", "w"), indent=1, default=float)
+json.dump(out, open(RESULTS + "/extra_checks.json", "w"), indent=1, default=float)
 print("done in %.0f s" % out["_runtime_s"])

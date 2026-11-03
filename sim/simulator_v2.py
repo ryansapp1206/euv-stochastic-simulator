@@ -25,7 +25,13 @@ resist film. It follows the structure of published stochastic resist models
 
 Per hole it reports the printed CD (equivalent-circle diameter), whether the
 hole is missing (cleared area < 25% of target area) and whether it merged with
-a neighbour (dissolved path across the cell boundary).
+a neighbour.  By default (hole_metric="component") a hole is the largest
+connected dissolved region in its cell (4-connected, periodic tile), its area
+is the size of that region, and it is merged when that region is also the
+largest region of another hole.  Stray dissolved specks are ignored.  The
+older rule (hole_metric="cell": all dissolved pixels in the cell count, and
+any dissolved pixels touching across a cell border count as a merge) is kept
+for comparison.
 
 Every noise source can be switched off for tests and noise budgets.
 """
@@ -35,7 +41,9 @@ from dataclasses import dataclass, field, replace
 from functools import lru_cache
 
 import numpy as np
-from scipy.ndimage import gaussian_filter
+from scipy.ndimage import gaussian_filter, label as ndi_label
+from scipy.sparse import coo_matrix
+from scipy.sparse.csgraph import connected_components
 
 # ---------------------------------------------------------------- constants
 WAVELENGTH_NM = 13.5
@@ -57,7 +65,7 @@ class Params:
     cells_y: int = 3              # holes per tile (rows) in y
     # ---- optics
     na: float = 0.33
-    illumination: str = "quasar"  # "quasar" (auto-centred for square arrays) or "annular"
+    illumination: str = "quasar"  # "quasar" (square arrays), "hexapole" (staggered), "annular", "interference"
     pole_sigma: float = 0.10      # quasar pole radius
     sigma_in: float = 0.40        # annular
     sigma_out: float = 0.85
@@ -81,6 +89,7 @@ class Params:
     px: float = 1.0               # nm per pixel (for convergence tests; pitches must be multiples)
     # ---- failure definitions
     missing_area_frac: float = 0.25
+    hole_metric: str = "component"  # "component" (default) or "cell" (old rule)
     # ---- noise switches
     noise: tuple = ("photon", "pag", "quencher", "pg")
 
@@ -123,7 +132,11 @@ def _geometry(p: Params):
     for k, (x0, y0) in enumerate(zip(cx, cy)):
         dx = (xx - x0 + Wn / 2) % Wn - Wn / 2
         dy = (yy - y0 + Hn / 2) % Hn - Hn / 2
-        mask[(np.abs(dx) <= m / 2) & (np.abs(dy) <= m / 2)] = 1.0
+        # exact fraction of each pixel covered by the square mask hole (anti-aliased),
+        # so mask sizes are not rounded to whole pixel pairs
+        cov_x = np.clip(m / 2 - np.abs(dx) + p.px / 2, 0.0, p.px) / p.px
+        cov_y = np.clip(m / 2 - np.abs(dy) + p.px / 2, 0.0, p.px) / p.px
+        mask = np.maximum(mask, cov_x * cov_y)
         d2 = dx * dx + dy * dy
         closer = d2 < best
         best[closer] = d2[closer]
@@ -147,6 +160,24 @@ def _source_points(p: Params):
                 for ay in r:
                     if ax * ax + ay * ay <= p.pole_sigma ** 2 + 1e-12:
                         pts.append((sx_c * c + ax, sy_c * c + ay))
+    elif p.illumination == "hexapole":
+        # Staggered (near-hexagonal) arrays: six poles at half of each first
+        # diffraction order g, so every pole images the 0th order and the
+        # opposite first order symmetrically (the hexagonal analogue of the
+        # quasar rule).  Lattice a1 = (px, 0), a2 = (px/2, py).
+        if not p.stagger:
+            raise ValueError("hexapole illumination is for staggered arrays")
+        b1 = np.array([1.0 / p.pitch_x, -0.5 / p.pitch_y])
+        b2 = np.array([0.0, 1.0 / p.pitch_y])
+        r = np.linspace(-p.pole_sigma, p.pole_sigma, p.pole_samples)
+        for g in (b1, -b1, b2, -b2, b1 + b2, -(b1 + b2)):
+            c = WAVELENGTH_NM * g / (2 * p.na)
+            rad = np.hypot(*c)
+            c = c * float(np.clip(rad, 0.3, 0.9 - p.pole_sigma)) / rad
+            for ax in r:
+                for ay in r:
+                    if ax * ax + ay * ay <= p.pole_sigma ** 2 + 1e-12:
+                        pts.append((c[0] + ax, c[1] + ay))
     elif p.illumination == "interference":
         return None, None             # handled analytically in aerial_image
     elif p.illumination == "annular":
@@ -189,6 +220,55 @@ def aerial_image(p: Params) -> np.ndarray:
 # ---------------------------------------------------------------- resist
 def _draw(rng, lam, on):
     return rng.poisson(lam).astype(np.float32) if on else lam.astype(np.float32)
+
+
+_ST4 = np.zeros((3, 3, 3), dtype=bool)
+_ST4[1] = [[0, 1, 0], [1, 1, 1], [0, 1, 0]]   # 4-connected in-plane, never across trials
+
+
+def _measure_components(clear: np.ndarray, cell: np.ndarray, n_holes: int):
+    """Per-hole area (pixels) and merged flag from connected dissolved regions.
+
+    clear: (b, H, W) bool.  The tile is periodic, so regions that touch across
+    the tile edges are joined.  Each hole's body is the region with the most
+    pixels inside the hole's cell; area = full size of that region.  A hole is
+    merged when its body is also the body of another hole in the same tile.
+    """
+    b = clear.shape[0]
+    lab, n = ndi_label(clear, structure=_ST4)
+    if n == 0:
+        return np.zeros((b, n_holes)), np.zeros((b, n_holes), dtype=bool)
+    # join regions across the periodic edges
+    pa, pb = [], []
+    for e0, e1 in ((lab[:, :, -1], lab[:, :, 0]), (lab[:, -1, :], lab[:, 0, :])):
+        both = (e0 > 0) & (e1 > 0)
+        pa.append(e0[both]); pb.append(e1[both])
+    pa, pb = np.concatenate(pa), np.concatenate(pb)
+    if len(pa):
+        g = coo_matrix((np.ones(len(pa), dtype=np.int8), (pa, pb)), shape=(n + 1, n + 1))
+        _, root = connected_components(g, directed=False)
+    else:
+        root = np.arange(n + 1)
+    r = root[lab[clear]]                                   # region id per dissolved pixel
+    t = np.broadcast_to(np.arange(b)[:, None, None], clear.shape)[clear]
+    k = np.broadcast_to(cell[None], clear.shape)[clear]
+    size = np.bincount(r)
+    key = r.astype(np.int64) * n_holes + k
+    uk, cnt = np.unique(key, return_counts=True)
+    ur, uc = uk // n_holes, uk % n_holes
+    trial_of = np.zeros(size.size, dtype=np.int64)
+    trial_of[r] = t
+    ut = trial_of[ur]
+    o = np.lexsort((-cnt, uc, ut))                         # biggest share first per (trial, hole)
+    ut, uc, ur = ut[o], uc[o], ur[o]
+    first = np.ones(len(o), dtype=bool)
+    first[1:] = (ut[1:] != ut[:-1]) | (uc[1:] != uc[:-1])
+    body = np.full((b, n_holes), -1, dtype=np.int64)
+    body[ut[first], uc[first]] = ur[first]
+    area = np.where(body >= 0, size[np.maximum(body, 0)], 0).astype(float)
+    same = (body[:, :, None] == body[:, None, :]) & ~np.eye(n_holes, dtype=bool)[None]
+    merged = same.any(axis=2) & (body >= 0)
+    return area, merged
 
 
 def simulate(p: Params, n_trials: int, rng=None, batch: int | None = None, return_fields: bool = False):
@@ -245,21 +325,26 @@ def simulate(p: Params, n_trials: int, rng=None, batch: int | None = None, retur
         clear = (frac > p.dev_threshold).all(axis=1)         # open through every layer
         photons, acid, h, frac = photons.sum(1), acid.sum(1), h.mean(1), frac.min(1)
 
-        # per-hole cleared area
-        flat = clear.reshape(b, -1)
-        area = np.zeros((b, n_holes))
-        for k in range(n_holes):
-            area[:, k] = flat[:, cell_flat == k].sum(axis=1)
-        # merged: cleared neighbours in different cells
-        mg = np.zeros((b, n_holes), dtype=bool)
-        for axis in (1, 2):
-            nb = np.roll(clear, -1, axis=axis)
-            cnb = np.roll(cell, -1, axis=axis - 1)
-            bridge = clear & nb & (cell != cnb)[None]
-            if bridge.any():
-                idx_b, yy_, xx_ = np.nonzero(bridge)
-                mg[idx_b, cell[yy_, xx_]] = True
-                mg[idx_b, cnb[yy_, xx_]] = True
+        if p.hole_metric == "component":
+            area, mg = _measure_components(clear, cell, n_holes)
+        elif p.hole_metric == "cell":
+            # old rule: every dissolved pixel in the cell counts ...
+            flat = clear.reshape(b, -1)
+            area = np.zeros((b, n_holes))
+            for k in range(n_holes):
+                area[:, k] = flat[:, cell_flat == k].sum(axis=1)
+            # ... and dissolved pixels touching across a cell border = merged
+            mg = np.zeros((b, n_holes), dtype=bool)
+            for axis in (1, 2):
+                nb = np.roll(clear, -1, axis=axis)
+                cnb = np.roll(cell, -1, axis=axis - 1)
+                bridge = clear & nb & (cell != cnb)[None]
+                if bridge.any():
+                    idx_b, yy_, xx_ = np.nonzero(bridge)
+                    mg[idx_b, cell[yy_, xx_]] = True
+                    mg[idx_b, cnb[yy_, xx_]] = True
+        else:
+            raise ValueError(f"unknown hole_metric {p.hole_metric!r}")
         area = area * a_px                                   # nm^2
         cds.append(2 * np.sqrt(area / np.pi))
         missing.append(area < p.missing_area_frac * target_area)

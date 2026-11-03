@@ -4,7 +4,7 @@ from dataclasses import replace
 import numpy as np
 
 from simulator_v2 import (Params, PHOTONS_PER_NM2_PER_MJCM2, aerial_image, simulate,
-                          summarize, dose_to_size)
+                          summarize, dose_to_size, _geometry, _measure_components)
 
 
 def test_photon_constant():
@@ -70,6 +70,45 @@ def test_more_dose_less_variation():
     sa = summarize(simulate(a, 200, np.random.default_rng(4)))["sigma_cd"]
     sb = summarize(simulate(b, 200, np.random.default_rng(4)))["sigma_cd"]
     assert sb < sa, (sa, sb)
+
+
+def _disc(clear, cy, cx, r):
+    yy, xx = np.mgrid[:clear.shape[0], :clear.shape[1]] + 0.5
+    clear |= (yy - cy) ** 2 + (xx - cx) ** 2 <= r * r
+
+
+def test_hole_measurement_ignores_specks_and_finds_bridges():
+    # pass 2: a hole is its largest connected region; specks don't count; a real bridge merges
+    p = Params(cd_target=10, pitch_x=20, pitch_y=20, cells_x=2, cells_y=2)
+    _, cell, nh = _geometry(p)
+    c = np.zeros((40, 40), bool)
+    for cy, cx in ((10, 10), (10, 30), (30, 10), (30, 30)):
+        _disc(c, cy, cx, 5)
+    disc_area = c[:20, :20].sum()
+    a = c.copy()
+    a[9, 19] = a[9, 20] = True                 # two specks touching across the cell border
+    area, merged = _measure_components(a[None], cell, nh)
+    assert not merged.any(), merged
+    assert np.all(area == disc_area), area
+    b = c.copy()
+    b[9, 14:26] = True                         # a 1-pixel-wide bridge between holes 0 and 1
+    area, merged = _measure_components(b[None], cell, nh)
+    assert merged[0].tolist() == [True, True, False, False], merged
+    d = c.copy()
+    d[29, 34:40] = True; d[29, 0:7] = True     # bridge through the periodic tile edge (holes 3 and 2)
+    area, merged = _measure_components(d[None], cell, nh)
+    assert merged[0].tolist() == [False, False, True, True], merged
+    e = np.zeros((40, 40), bool)
+    e[5:10, 5:10] = True; e[10:15, 10:15] = True   # corner-to-corner only: not a bridge
+    area, merged = _measure_components(e[None], cell, nh)
+    assert not merged.any() and area[0, 0] == 25, (area, merged)
+
+
+def test_mask_area_is_exact_for_any_size():
+    # pass 2: anti-aliased mask, so a 17.17 nm or 31 nm mask hole has exactly that area
+    for m, pitch in ((17.17, 32), (31.0, 52), (24.0, 50), (22.5, 50)):
+        mask, _, nh = _geometry(Params(cd_target=m, mask_cd=m, pitch_x=pitch, pitch_y=pitch))
+        assert abs(mask.sum() / nh - m * m) < 1e-6, (m, mask.sum() / nh)
 
 
 if __name__ == "__main__":

@@ -1,4 +1,6 @@
 """Figures for the calibration report. Run after calibrate.py (reads results/calibration.json)."""
+import os
+RESULTS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "results")
 import json
 
 import numpy as np
@@ -8,7 +10,7 @@ import matplotlib.pyplot as plt
 
 from simulator_v2 import Params, simulate, dose_to_size
 
-r = json.load(open("results/calibration.json"))
+r = json.load(open(RESULTS + "/calibration.json"))
 plt.rcParams.update({"font.size": 10, "axes.spines.top": False, "axes.spines.right": False})
 BLUE, GREY, RED = "#2563eb", "#9ca3af", "#dc2626"
 
@@ -39,7 +41,7 @@ ax.legend(loc="upper right", frameon=False)
 fig.text(0.01, 0.01, "Grey band: ±20% of published. Grey diamonds: not like-for-like comparisons (see CALIBRATION.md).",
          fontsize=8, color="#555")
 fig.tight_layout(rect=[0, 0.04, 1, 1])
-fig.savefig("results/calibration_lcdu.png", dpi=150)
+fig.savefig(RESULTS + "/calibration_lcdu.png", dpi=150)
 
 # ---- 2. CD vs dose (Yen 2018) ----------------------------------------------------------
 y = r["T5_yen2018"]["sweep"]
@@ -49,7 +51,7 @@ ax.plot([s["dose"] for s in y], [s["mean_cd"] for s in y], "D--", color=BLUE, la
 ax.set_xlabel("Dose (mJ/cm²)"); ax.set_ylabel("Mean hole size (nm)")
 ax.set_title("Printed size vs dose matches ASML's simulation within 5%", loc="left", fontsize=11)
 ax.legend(frameon=False)
-fig.tight_layout(); fig.savefig("results/calibration_cd_vs_dose.png", dpi=150)
+fig.tight_layout(); fig.savefig(RESULTS + "/calibration_cd_vs_dose.png", dpi=150)
 
 # ---- 3. double cliff ----------------------------------------------------------------
 c = r["T6_double_cliff"]["sweep"]
@@ -64,7 +66,7 @@ ax.text(dose[-1], floor * 1.3, f"1 in {n:,} (measurement floor; points below = n
 ax.set_xlabel("Dose (mJ/cm²)"); ax.set_ylabel("Share of holes that fail")
 ax.set_title("Dense 18 nm holes, 36 nm pitch: a failure cliff on each side", loc="left", fontsize=11)
 ax.legend(frameon=False, loc="upper center")
-fig.tight_layout(); fig.savefig("results/calibration_double_cliff.png", dpi=150)
+fig.tight_layout(); fig.savefig(RESULTS + "/calibration_double_cliff.png", dpi=150)
 
 # ---- 4. one tile at each stage ------------------------------------------------------
 p = dose_to_size(Params(cd_target=20, pitch_x=40, pitch_y=40, dose=30))
@@ -79,5 +81,5 @@ for a, (t, img, cm) in zip(axs, panels):
     im = a.imshow(img, cmap=cm, interpolation="nearest")
     a.set_title(t, fontsize=10); a.set_xticks([]); a.set_yticks([])
 fig.suptitle("Simulator v2: 3×3 array of 20 nm holes at 40 nm pitch, 30 mJ/cm² (one random trial)", fontsize=12)
-fig.tight_layout(rect=[0, 0, 1, 0.9]); fig.savefig("results/v2_stages.png", dpi=130)
+fig.tight_layout(rect=[0, 0, 1, 0.9]); fig.savefig(RESULTS + "/v2_stages.png", dpi=130)
 print("figures written")

@@ -1,5 +1,7 @@
 """Verification runs: convergence, sensitivity, corrected Goethals targets, photon counts.
 Writes results/verification.json."""
+import os
+RESULTS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "results")
 import json, time
 from dataclasses import replace
 import numpy as np
@@ -65,5 +67,5 @@ log("E_photons_30mJ", dict(cyl27=float(per_nm2[r <= 13.5].sum()), cyl15=float(pe
                            yen_slide=[961, 378]))
 
 out["_runtime_s"] = time.time() - t0
-json.dump(out, open("../results/verification.json", "w"), indent=1, default=float)
+json.dump(out, open(RESULTS + "/verification.json", "w"), indent=1, default=float)
 print("done in %.0f s" % out["_runtime_s"])

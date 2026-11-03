@@ -8,6 +8,8 @@ rates and trends are then predictions, not fits.
 
 Writes results/calibration.json and results/calibration_*.png.
 """
+import os
+RESULTS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "results")
 import json
 import time
 from dataclasses import replace, asdict
@@ -106,6 +108,6 @@ d = np.log([r["dose"] for r in scale_rows]); s = np.log([r["sigma_cd"] for r in 
 log("T8_dose_scaling", loglog_slope=float(np.polyfit(d, s, 1)[0]), sweep=scale_rows)
 
 results["_runtime_s"] = time.time() - t0
-with open("results/calibration.json", "w") as f:
+with open(RESULTS + "/calibration.json", "w") as f:
     json.dump(results, f, indent=1)
 print("done in %.0f s" % results["_runtime_s"])
