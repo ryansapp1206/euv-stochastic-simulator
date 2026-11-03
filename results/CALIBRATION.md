@@ -1,12 +1,12 @@
 # Simulator v2 calibration report
 
-*Generated Nov 2, 2026. Reproduce with `python sim/calibrate.py` then `python sim/make_figures.py` (about 5 minutes).*
+*Generated Nov 2, 2026; corrected Nov 3 after source checks. Reproduce with `python sim/calibrate.py` then `python sim/make_figures.py` (about 5 minutes). For the full source checks, extra real-world comparisons, convergence and sensitivity tests, see [VERIFICATION.md](VERIFICATION.md).*
 
 ## Verdict
 
-Simulator v2 produces realistic numbers. On both like-for-like references, hole-to-hole size variation (LCDU) lands within 8% of the published value. Printed size versus dose matches an ASML simulation within 5%, and every qualitative trend in the literature appears. The resist parameter that gets fitted (quencher loading) always lands inside its published range.
+Simulator v2 produces realistic numbers for a typical chemically amplified resist. Hole-to-hole size variation (LCDU) lands within 8% of the best like-for-like measurement (Severi 2021) and between −17% and +27% across eight comparisons with typical processes (measured and industry data). The best modern resists do 30–50% better than the model. Printed size versus dose matches an ASML simulation within 5%, and every qualitative trend in the literature appears. The resist parameter that gets fitted (quencher loading) always lands inside its published range.
 
-The weakest part is the **absolute rate of missing holes**. The model reproduces the failure cliffs, but published numbers to check the exact rates against are scarce and not like-for-like (see Limitations). Treat failure probabilities as model predictions, not as matched values.
+The weakest part is the **absolute rate of missing holes**. The failure cliffs have the right shape and roughly the right level (consistent with imec's ~1 ppm floor at 40 nm pitch), but rates are uncertain by about an order of magnitude. Treat them as estimates.
 
 ## What the model does
 
@@ -48,14 +48,14 @@ The phrase "range" in Naulleau et al. is interpreted as full width at half maxim
 | Reference | Conditions | Published | Simulator v2 | Difference | Like-for-like? |
 | --- | --- | --- | --- | --- | --- |
 | Severi et al. 2021 | 24 nm holes, staggered 80 × 46 nm pitch, 80 mJ/cm², stochastic part only | 2.6 nm | 2.80 nm | +8% | Yes |
-| Naulleau et al. (model) | 16 nm half-pitch contacts, NA 0.33, their resist set, ~82 mJ/cm² | σ 1.15 nm | σ 1.18 nm | +3% | Yes (model vs model) |
-| Goethals et al. 2013 | C31P52, NXE:3100 (NA 0.25), 60 nm film, 31.7 mJ/cm² | 3.3 nm | 2.33 nm | −29% | Partly: published total includes metrology and mask error. Severi's breakdown attributes ~80% of the total to stochastics, giving ~2.6 nm and a −10% difference. |
-| Goethals et al. 2013 | C29P48, 33.5 mJ/cm² | 5.1 nm | 2.26 nm | −56% | No: the paper reports no process window for this case, so focus and mask effects dominate |
-| Wang et al. 2019 | HP24 at 16.4 mJ/cm²; HP20 at 21.1 mJ/cm² (best organic resist) | 2.3 / 2.2 nm | 4.51 / 4.51 nm | about +100% | No: interference lithography forms a different image, and its dose is not scanner dose (an ideal four-beam pattern peaks at ~4× the stated dose; a scanner dark-field hole peaks at ~0.45×) |
+| Naulleau et al. (model) | 16 nm half-pitch contacts, NA 0.33, their resist set; dose not stated, 82 mJ/cm² assumed | σ 1.15 nm | σ 1.18 nm | +3% | Yes (model vs model) |
+| Goethals et al. 2013 | C31P52: 31 nm mask holes printing 26 nm, 52 nm pitch, NXE:3100 (NA 0.25), 60 nm film, 31.7 mJ/cm² | 3.3 nm | 2.75 nm | −17% | Partly: published total includes metrology and mask error. If ~80% is stochastic, as in Severi's breakdown, that's ~2.6 nm and +6%. |
+| Goethals et al. 2013 | C29P48: 29 nm mask holes printing 24 nm, 48 nm pitch, 33.5 mJ/cm² | 5.1 nm | 2.76 nm | −46% | No: the paper reports no process window for this case, so focus and mask effects dominate |
+| Wang et al. 2019 | HP24 at 16.4 mJ/cm²; HP20 at 21.1 mJ/cm² (best organic resist) | 2.3 / 2.2 nm | 4.51 / 4.51 nm | about +100% | No: interference lithography (double-exposure four-beam) forms a much higher-contrast image than a scanner, uses a ~25 nm film, and its dose is calibrated against a reference resist rather than measured |
 
 ![LCDU comparison](calibration_lcdu.png)
 
-### Printed size versus dose (Yen 2018, ASML)
+### Printed size versus dose (Yen 2018, ASML stochastic simulation)
 
 | Dose (mJ/cm²) | 30 | 33 | 36 | 39 |
 | --- | --- | --- | --- | --- |
@@ -74,13 +74,13 @@ Slope: 0.59 nm per mJ/cm² against a published 0.69 (−14%). Yen's pitch isn't 
 | Dense arrays have two cliffs: missing holes at low dose, merged holes at high dose | imec (SemiWiki 2019) | Yes. For 18 nm holes at 36 nm pitch: 84% missing at 24 mJ/cm², none observed from 40 mJ/cm²; merging starts at ~46 and reaches 60% at 80 mJ/cm². |
 | Variation scales with dose | 1/√dose for pure photon noise; flatter when resist noise matters (Mack 2019) | σ ∝ dose^−0.29 at 20–100 mJ/cm² |
 | Smaller holes vary more | Park et al. 2021 | Flat from 28 to 18 nm (2.7–2.9 nm), rising to 3.5 nm at 16 nm. This also matches IBM/Fractilia 2020, who saw no LCDU change with CD at larger sizes. |
-| Fitted resist speed stays physical | Quencher 0.012–0.09 /nm³ | 0.012–0.086 /nm³ across all cases. At 100 mJ/cm² the fit gives 0.086, against Naulleau's 0.085 at 82 mJ/cm². |
+| Fitted resist speed stays physical | Quencher 0.012–0.09 /nm³ | 0.012–0.086 /nm³ across all cases. At 100 mJ/cm² the fit gives 0.086, against Naulleau's 0.085. |
 
 ![Double cliff](calibration_double_cliff.png)
 
 ## Limitations
 
-- **Missing-hole rates are the least constrained output.** Yen 2018 reports ~10% closing near 15 nm, where v2 gives ~0.1%. However, Yen's holes absorb ~961 photons in a 15 nm cylinder at 30 mJ/cm², roughly 5× more than any resist in the published parameter range, so the setups differ. Adding five depth layers (`layers=5`) changed LCDU by only 5% and did not raise closing rates.
+- **Missing-hole rates are the least constrained output.** Yen 2018 (an ASML simulation) reports ~10% closing near a 15 nm CD, where v2 gives ~1%, even though Yen's resist absorbs ~2.2× more photons (961 in a 27 nm cylinder vs 420 in v2). v2 may under-predict closing at small sizes by up to ~10×. Adding five depth layers (`layers=5`) changed LCDU by only 5% and did not raise closing rates.
 - 2D column model by default. The 3D layered option exists but runs 4–5× slower.
 - No mask bias, mask 3D effects, flare, defocus or aberrations. A binary dark-field mask is assumed.
 - Development is a simple threshold, not a full development-rate model.

@@ -61,6 +61,7 @@ class Params:
     pole_sigma: float = 0.10      # quasar pole radius
     sigma_in: float = 0.40        # annular
     sigma_out: float = 0.85
+    pole_samples: int = 7         # source points across each pole (convergence tests)
     flare: float = 0.0            # fraction of open-frame dose added uniformly
     # ---- exposure
     dose: float = 30.0            # mJ/cm^2 (scanner / open-frame dose)
@@ -77,6 +78,7 @@ class Params:
     k_amp: float = 60.0           # nm^3, deprotection rate x bake time
     dev_threshold: float = 0.5    # deprotected fraction needed to dissolve
     layers: int = 1               # layers through the film (1 = 2D column model)
+    px: float = 1.0               # nm per pixel (for convergence tests; pitches must be multiples)
     # ---- failure definitions
     missing_area_frac: float = 0.25
     # ---- noise switches
@@ -101,22 +103,26 @@ def _hole_centres(p: Params):
 def _tile_shape(p: Params):
     if p.stagger and p.cells_y % 2:
         raise ValueError("staggered arrays need an even number of rows")
-    return p.cells_y * p.pitch_y, p.cells_x * p.pitch_x   # (H, W)
+    H, W = p.cells_y * p.pitch_y / p.px, p.cells_x * p.pitch_x / p.px
+    if abs(H - round(H)) > 1e-9 or abs(W - round(W)) > 1e-9:
+        raise ValueError("pitch must be a multiple of px")
+    return int(round(H)), int(round(W))   # pixels
 
 
 @lru_cache(maxsize=64)
 def _geometry(p: Params):
     """Mask, cell map (nearest hole, periodic) for a parameter set."""
     H, W = _tile_shape(p)
-    yy, xx = np.mgrid[:H, :W] + 0.5
+    yy, xx = (np.mgrid[:H, :W] + 0.5) * p.px
+    Hn, Wn = H * p.px, W * p.px
     cx, cy = _hole_centres(p)
     m = p.mask_cd if p.mask_cd is not None else p.cd_target
     mask = np.zeros((H, W))
     best = np.full((H, W), np.inf)
     cell = np.zeros((H, W), dtype=np.int32)
     for k, (x0, y0) in enumerate(zip(cx, cy)):
-        dx = (xx - x0 + W / 2) % W - W / 2
-        dy = (yy - y0 + H / 2) % H - H / 2
+        dx = (xx - x0 + Wn / 2) % Wn - Wn / 2
+        dy = (yy - y0 + Hn / 2) % Hn - Hn / 2
         mask[(np.abs(dx) <= m / 2) & (np.abs(dy) <= m / 2)] = 1.0
         d2 = dx * dx + dy * dy
         closer = d2 < best
@@ -134,13 +140,15 @@ def _source_points(p: Params):
         # sit symmetrically in the pupil (standard choice for square arrays).
         sc = WAVELENGTH_NM / (np.sqrt(2) * min(p.pitch_x, p.pitch_y) * p.na)
         sc = float(np.clip(sc, 0.3, 0.9 - p.pole_sigma))
-        r = np.linspace(-p.pole_sigma, p.pole_sigma, 7)
+        r = np.linspace(-p.pole_sigma, p.pole_sigma, p.pole_samples)
         for sx_c, sy_c in [(1, 1), (1, -1), (-1, 1), (-1, -1)]:
             c = sc / np.sqrt(2)
             for ax in r:
                 for ay in r:
                     if ax * ax + ay * ay <= p.pole_sigma ** 2 + 1e-12:
                         pts.append((sx_c * c + ax, sy_c * c + ay))
+    elif p.illumination == "interference":
+        return None, None             # handled analytically in aerial_image
     elif p.illumination == "annular":
         for rad in np.linspace(p.sigma_in, p.sigma_out, 5):
             n = max(8, int(40 * rad))
@@ -157,9 +165,17 @@ def aerial_image(p: Params) -> np.ndarray:
     """Intensity relative to an open frame (1.0 = full scanner dose)."""
     mask, _, _ = _geometry(p)
     H, W = mask.shape
+    if p.illumination == "interference":
+        # Double-exposure four-beam interference (PSI-style EUV-IL): two crossed
+        # two-beam line gratings, each a sinusoid; holes sit at the shared peaks.
+        # Scaled so the average intensity equals the stated dose (1.0).
+        yy, xx = (np.mgrid[:H, :W] + 0.5) * p.px
+        gx = 1 + np.cos(2 * np.pi * (xx - p.pitch_x / 2) / p.pitch_x)
+        gy = 1 + np.cos(2 * np.pi * (yy - p.pitch_y / 2) / p.pitch_y)
+        return 0.5 * (gx + gy)
     M = np.fft.fft2(mask)
-    fy = np.fft.fftfreq(H)[:, None]          # cycles per nm
-    fx = np.fft.fftfreq(W)[None, :]
+    fy = np.fft.fftfreq(H, d=p.px)[:, None]  # cycles per nm
+    fx = np.fft.fftfreq(W, d=p.px)[None, :]
     cutoff = p.na / WAVELENGTH_NM
     pts, w = _source_points(p)
     img = np.zeros((H, W))
@@ -193,14 +209,16 @@ def simulate(p: Params, n_trials: int, rng=None, batch: int | None = None, retur
     # share of incident photons absorbed in each layer (sums to absorbed_frac)
     layer_abs = (np.exp(-p.absorptivity * dz * np.arange(L))
                  * (1 - np.exp(-p.absorptivity * dz))).astype(np.float32)
-    mean_abs = p.dose * PHOTONS_PER_NM2_PER_MJCM2 * layer_abs[:, None, None] * I[None]
-    pag0, q0, pg0 = p.rho_pag * dz, p.rho_q * dz, p.rho_pg * dz     # per voxel
+    a_px = p.px * p.px                                          # pixel area, nm^2
+    mean_abs = p.dose * PHOTONS_PER_NM2_PER_MJCM2 * a_px * layer_abs[:, None, None] * I[None]
+    vox = dz * a_px                                              # voxel volume, nm^3
+    pag0, q0, pg0 = p.rho_pag * vox, p.rho_q * vox, p.rho_pg * vox  # per voxel
     target_area = np.pi * (p.cd_target / 2) ** 2
     cell_flat = cell.ravel()
     modes = ("wrap", "reflect", "wrap", "wrap")    # periodic in x, y; film surfaces reflect
 
     def blur(x, s):
-        return gaussian_filter(x, (0, s / dz, s, s), mode=modes)
+        return gaussian_filter(x, (0, s / dz, s / p.px, s / p.px), mode=modes)
 
     batch = batch or max(20, 250 // L)
     cds, missing, merged = [], [], []
@@ -216,7 +234,7 @@ def simulate(p: Params, n_trials: int, rng=None, batch: int | None = None, retur
         quench = _draw(rng, np.full((b, L, H, W), q0, np.float32), "quencher" in nz)
         a_b = blur(acid, p.sigma_a)
         q_b = blur(quench, p.sigma_q)
-        h = np.maximum(a_b - q_b, 0.0) / dz                 # net acid per nm^3
+        h = np.maximum(a_b - q_b, 0.0) / vox                # net acid per nm^3
         m = np.exp(-p.k_amp * h)                             # protected fraction
         if "pg" in nz:
             dep = rng.poisson(pg0 * (1 - m)).astype(np.float32)
@@ -242,6 +260,7 @@ def simulate(p: Params, n_trials: int, rng=None, batch: int | None = None, retur
                 idx_b, yy_, xx_ = np.nonzero(bridge)
                 mg[idx_b, cell[yy_, xx_]] = True
                 mg[idx_b, cnb[yy_, xx_]] = True
+        area = area * a_px                                   # nm^2
         cds.append(2 * np.sqrt(area / np.pi))
         missing.append(area < p.missing_area_frac * target_area)
         merged.append(mg)

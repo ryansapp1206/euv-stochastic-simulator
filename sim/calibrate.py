@@ -50,26 +50,30 @@ for tag, pitch, dose, lcdu in [("T2a_wang2019_hp24", 48, 16.4, 2.3), ("T2b_wang2
     p = dose_to_size(p)
     log(tag, published_lcdu=lcdu, rho_q=p.rho_q, **run(p))
 
-# ---- Target 3: Goethals et al. 2013 (imec, NXE:3100, NA 0.25, 60 nm film) -------------
-# C31P52 dose-to-size 31.7 mJ/cm2, 1-sigma LCDU 1.1 nm; C29P48 33.5 mJ/cm2, 1-sigma 1.7 nm
-for tag, cd, pitch, dose, s1sig in [("T3a_goethals2013_c31p52", 31, 52, 31.7, 1.1),
-                                     ("T3b_goethals2013_c29p48", 29, 48, 33.5, 1.7)]:
-    p = Params(cd_target=cd, pitch_x=pitch, pitch_y=pitch, dose=dose, na=0.25, thickness=60)
+# ---- Target 3: Goethals et al. 2013 (imec, NXE:3100, NA 0.25, 60 nm film, quasar) ------
+# C31P52 = 31 nm mask holes, 52 nm pitch, printing 26 nm holes: dose-to-size 31.7 mJ/cm2,
+# 1-sigma LCDU 1.1 nm. C29P48 = 29 nm mask holes, 48 nm pitch, printing 24 nm: 33.5 mJ/cm2,
+# 1-sigma 1.7 nm ("no process window"). LCDU totals include metrology and mask error.
+for tag, cd, mask, pitch, dose, s1sig in [("T3a_goethals2013_c31p52", 26, 31, 52, 31.7, 1.1),
+                                           ("T3b_goethals2013_c29p48", 24, 29, 48, 33.5, 1.7)]:
+    p = Params(cd_target=cd, mask_cd=mask, pitch_x=pitch, pitch_y=pitch, dose=dose, na=0.25, thickness=60)
     p = dose_to_size(p)
     log(tag, published_lcdu=3 * s1sig, rho_q=p.rho_q, **run(p))
 
 # ---- Target 4: Naulleau et al. model cross-check -------------------------------------
-# 16 nm half-pitch contacts, NA 0.33 quadrupole pole 0.1, their CAR parameter set, ~82 mJ/cm2:
-# mean CD 17.17 nm, sigma 1.15 nm (2.6M contacts)
+# 16 nm half-pitch contacts, NA 0.33 quadrupole pole 0.1, their CAR parameter set:
+# mean CD 17.17 nm, sigma 1.15 nm (2.6M contacts). The paper does not state the dose for
+# this result; 82 mJ/cm2 is the mean dose of its later dose-noise analysis (an assumption).
 p4 = Params(cd_target=17.17, pitch_x=32, pitch_y=32, dose=82, qe=3.0, rho_q=0.085,
             sigma_e=1.7, sigma_a=5.1, sigma_q=1.3, cells_x=4, cells_y=4)
 p4 = dose_to_size(p4, knob="k_amp")
 s4 = run(p4)
 log("T4_naulleau_model", published_sigma=1.15, published_lcdu=3.45, k_amp=p4.k_amp, **s4)
 
-# ---- Target 5: Yen 2018 (ASML) CD-vs-dose and closing --------------------------------
+# ---- Target 5: Yen 2018 (ASML stochastic CAR *simulation*, 10,000 holes per dose) ------
 # CD 15 -> 17.4 -> 19.5 -> 21.2 nm at 30 -> 33 -> 36 -> 39 mJ/cm2 (slope ~0.69 nm per mJ/cm2);
-# ~10% of holes close at CD ~15 nm. Pitch not given; we use 40 nm, resist sized at 36 mJ/cm2.
+# ~10% of holes close at CD ~15 nm. Pitch, film and resist not given; we use 40 nm pitch,
+# resist sized at 36 mJ/cm2.
 p5 = dose_to_size(Params(cd_target=19.5, pitch_x=40, pitch_y=40, dose=36))
 rows = []
 for dose in [27, 30, 33, 36, 39]:

@@ -15,9 +15,9 @@ BLUE, GREY, RED = "#2563eb", "#9ca3af", "#dc2626"
 # ---- 1. hole-size variation: published vs simulated --------------------------------
 rows = [
     ("Severi 2021\n24 nm, 80 mJ/cm²", r["T1_severi2021"], True),
-    ("Naulleau model\n17 nm, 82 mJ/cm²", r["T4_naulleau_model"], True),
-    ("Goethals 2013 C31P52\n(total, incl. metrology)", r["T3a_goethals2013_c31p52"], False),
-    ("Goethals 2013 C29P48\n(no process window)", r["T3b_goethals2013_c29p48"], False),
+    ("Naulleau model\n17 nm (dose assumed)", r["T4_naulleau_model"], True),
+    ("Goethals 2013, 26 nm\n(total, incl. metrology)", r["T3a_goethals2013_c31p52"], False),
+    ("Goethals 2013, 24 nm\n(no process window)", r["T3b_goethals2013_c29p48"], False),
     ("Wang 2019 HP24\n(interference litho)", r["T2a_wang2019_hp24"], False),
     ("Wang 2019 HP20\n(interference litho)", r["T2b_wang2019_hp20"], False),
 ]
@@ -44,10 +44,10 @@ fig.savefig("results/calibration_lcdu.png", dpi=150)
 # ---- 2. CD vs dose (Yen 2018) ----------------------------------------------------------
 y = r["T5_yen2018"]["sweep"]
 fig, ax = plt.subplots(figsize=(5.2, 3.8))
-ax.plot([30, 33, 36, 39], [15.0, 17.4, 19.5, 21.2], "o-", color="black", label="Yen 2018 (ASML)")
+ax.plot([30, 33, 36, 39], [15.0, 17.4, 19.5, 21.2], "o-", color="black", label="Yen 2018 (ASML simulation)")
 ax.plot([s["dose"] for s in y], [s["mean_cd"] for s in y], "D--", color=BLUE, label="simulator v2")
 ax.set_xlabel("Dose (mJ/cm²)"); ax.set_ylabel("Mean hole size (nm)")
-ax.set_title("Printed size vs dose matches within 5%", loc="left", fontsize=11)
+ax.set_title("Printed size vs dose matches ASML's simulation within 5%", loc="left", fontsize=11)
 ax.legend(frameon=False)
 fig.tight_layout(); fig.savefig("results/calibration_cd_vs_dose.png", dpi=150)
 
