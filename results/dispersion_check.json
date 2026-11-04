@@ -1,0 +1,25 @@
+{
+ "missing_side_f0.80": {
+  "p": 0.036625,
+  "mean_count": 65.925,
+  "variance_ratio": 1.2978977060652732,
+  "p_value": 0.20139864184754283,
+  "per_tile_variance_ratio": 0.9817631568992276
+ },
+ "merged_side_f1.60": {
+  "p": 0.006722222222222222,
+  "mean_count": 12.1,
+  "variance_ratio": 1.838167120951901,
+  "p_value": 0.0021956425254068155,
+  "per_tile_variance_ratio": 1.9819951154068083,
+  "events_variance_ratio": 0.9078924773439903,
+  "mean_events": 6.025
+ },
+ "missing_side_f0.75_P48": {
+  "p": 0.027874999999999997,
+  "mean_count": 50.175,
+  "variance_ratio": 1.095410055140109,
+  "p_value": 0.6286585414513246,
+  "per_tile_variance_ratio": 0.9911231184356075
+ }
+}

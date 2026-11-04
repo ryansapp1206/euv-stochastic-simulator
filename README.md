@@ -13,7 +13,8 @@ A Monte Carlo simulator of how contact holes print under EUV lithography, plus m
 - [x] Calibration against published data (`results/CALIBRATION.md`)
 - [x] Verification, two passes: sources, real-world data, another simulator, a semi-analytical check (`results/VERIFICATION.md`)
 - [x] Unit tests (`sim/test_simulator_v2.py`)
-- [ ] Dataset generation (Latin hypercube over process settings)
+- [x] Dataset generator with built-in quality checks; pilot passed (`results/DATASET.md`)
+- [ ] Full dataset generation (Latin hypercube over process settings)
 - [ ] Model comparison: linear regression, random forest, neural network
 - [ ] Report and presentation
 
@@ -29,6 +30,11 @@ sim/
   analytic_check.py      semi-analytical noise model vs Monte Carlo -> results/analytic_check.json
   pass2_checks.py        pass 2 comparisons (Severi pitches, PROLITH, ...) -> results/pass2/*.json
   compare_passes.py      pass 1 vs pass 2 table (pass 1 outputs in results/pass1/)
+  make_dataset.py        ML dataset generator (resumable, multi-core) -> data/<name>/
+  check_dataset.py       dataset quality checks -> data/<name>/qa_report.md
+  replicate_check.py     re-runs dataset rows to test regeneration and error bars
+  optics_check.py, corner_check.py, dispersion_check.py   final pre-dataset checks
+  test_make_dataset.py   generator tests
   make_figures.py        calibration figures -> results/*.png
   make_verification_figure.py   parity plot -> results/verification_parity.png
   test_simulator_v2.py   sanity tests
@@ -48,6 +54,10 @@ python sim/test_simulator_v2.py   # ~35 s
 python sim/simulator_v2.py        # one quick dose-to-size example
 python sim/calibrate.py           # ~5 min
 python sim/make_figures.py
+
+# dataset (see results/DATASET.md)
+cd sim && python make_dataset.py --out ../data/full --n-resists 1500 --workers 8
+python check_dataset.py ../data/full
 ```
 
 Scripts save to `results/` wherever they are run from.

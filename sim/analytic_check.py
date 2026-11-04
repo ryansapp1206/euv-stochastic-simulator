@@ -32,7 +32,7 @@ from dataclasses import replace
 
 import numpy as np
 from scipy.ndimage import gaussian_filter, map_coordinates
-from scipy.stats import skellam
+from scipy.stats import norm, skellam
 
 from simulator_v2 import (Params, PHOTONS_PER_NM2_PER_MJCM2, aerial_image, _hole_centres,
                           simulate, summarize, dose_to_size)
@@ -55,7 +55,7 @@ def analytic(p: Params, n_theta: int = 180):
     c = np.exp(-p.qe * E / pag0)                       # unconverted PAG fraction
     A = pag0 * (1 - c)                                 # mean acids / voxel
     hbar = (g(A, p.sigma_a) - q0) / vox                # mean net acid / nm^3
-    h_th = np.log(2) / p.k_amp
+    h_th = -np.log(1 - p.dev_threshold) / p.k_amp       # frac = 1 - exp(-K h) crosses the threshold
     gy, gx = np.gradient(hbar, px)                     # nm^-4 (interior; holes sit away from edges)
 
     cx, cy = _hole_centres(p)
@@ -103,7 +103,11 @@ def analytic(p: Params, n_theta: int = 180):
     # protecting-group (white) noise and the PG-smeared mean area, per hole cell
     m = np.exp(-p.k_amp * np.maximum(hbar, 0))
     mu_dep, mu_rem = pg0 * (1 - m), pg0 * m
-    P = skellam.sf(0, np.maximum(mu_dep, 1e-12), np.maximum(mu_rem, 1e-12))  # P(dep - rem >= 1)
+    if abs(p.dev_threshold - 0.5) < 1e-12:
+        P = skellam.sf(0, np.maximum(mu_dep, 1e-12), np.maximum(mu_rem, 1e-12))  # P(dep - rem >= 1)
+    else:   # normal approximation to P(dep / (dep + rem) > threshold)
+        f = 1 - m
+        P = norm.cdf((f - p.dev_threshold) / np.sqrt(np.maximum(f * (1 - f), 1e-12) / pg0))
     from simulator_v2 import _geometry
     _, cell, nh = _geometry(p)
     var_pg = np.array([np.sum((P * (1 - P))[cell == k]) for k in range(nh)]) * px ** 4

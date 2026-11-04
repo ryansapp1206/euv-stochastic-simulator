@@ -1,0 +1,10 @@
+{
+ "rows": 80,
+ "regenerate_exactly": 80,
+ "pairs_for_size": 80,
+ "spread_z_mean_cd": 0.9798644969566945,
+ "spread_z_sigma": 0.9593654393062058,
+ "max_abs_z": 2.5662941636998657,
+ "pairs_with_missing": 17,
+ "spread_z_missing": 0.9165775750465395
+}

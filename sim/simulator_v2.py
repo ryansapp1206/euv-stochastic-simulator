@@ -233,11 +233,14 @@ def _measure_components(clear: np.ndarray, cell: np.ndarray, n_holes: int):
     the tile edges are joined.  Each hole's body is the region with the most
     pixels inside the hole's cell; area = full size of that region.  A hole is
     merged when its body is also the body of another hole in the same tile.
+    Also returns group: the body id for merged holes, else -1. Holes sharing a
+    group id were joined by one merge event.
     """
     b = clear.shape[0]
     lab, n = ndi_label(clear, structure=_ST4)
     if n == 0:
-        return np.zeros((b, n_holes)), np.zeros((b, n_holes), dtype=bool)
+        return (np.zeros((b, n_holes)), np.zeros((b, n_holes), dtype=bool),
+                np.full((b, n_holes), -1, dtype=np.int64))
     # join regions across the periodic edges
     pa, pb = [], []
     for e0, e1 in ((lab[:, :, -1], lab[:, :, 0]), (lab[:, -1, :], lab[:, 0, :])):
@@ -268,7 +271,8 @@ def _measure_components(clear: np.ndarray, cell: np.ndarray, n_holes: int):
     area = np.where(body >= 0, size[np.maximum(body, 0)], 0).astype(float)
     same = (body[:, :, None] == body[:, None, :]) & ~np.eye(n_holes, dtype=bool)[None]
     merged = same.any(axis=2) & (body >= 0)
-    return area, merged
+    group = np.where(merged, body, -1)                    # same id = holes joined by one merge event
+    return area, merged, group
 
 
 def simulate(p: Params, n_trials: int, rng=None, batch: int | None = None, return_fields: bool = False):
@@ -301,7 +305,7 @@ def simulate(p: Params, n_trials: int, rng=None, batch: int | None = None, retur
         return gaussian_filter(x, (0, s / dz, s / p.px, s / p.px), mode=modes)
 
     batch = batch or max(20, 250 // L)
-    cds, missing, merged = [], [], []
+    cds, missing, merged, groups = [], [], [], []
     fields = None
     done = 0
     while done < n_trials:
@@ -326,7 +330,9 @@ def simulate(p: Params, n_trials: int, rng=None, batch: int | None = None, retur
         photons, acid, h, frac = photons.sum(1), acid.sum(1), h.mean(1), frac.min(1)
 
         if p.hole_metric == "component":
-            area, mg = _measure_components(clear, cell, n_holes)
+            area, mg, grp = _measure_components(clear, cell, n_holes)
+            # make merge-event ids unique across batches
+            groups.append(np.where(grp >= 0, grp + (done + 1) * (1 << 40), -1))
         elif p.hole_metric == "cell":
             # old rule: every dissolved pixel in the cell counts ...
             flat = clear.reshape(b, -1)
@@ -349,13 +355,15 @@ def simulate(p: Params, n_trials: int, rng=None, batch: int | None = None, retur
         cds.append(2 * np.sqrt(area / np.pi))
         missing.append(area < p.missing_area_frac * target_area)
         merged.append(mg)
+        if p.hole_metric != "component":
+            groups.append(np.full((b, n_holes), -1, dtype=np.int64))
         if return_fields and fields is None:
             fields = dict(image=I, photons=photons[0], acid=acid[0], net_acid=h[0],
                           deprotected=frac[0], clear=clear[0], cell=cell)
         done += b
 
     out = dict(cd=np.concatenate(cds).ravel(), missing=np.concatenate(missing).ravel(),
-               merged=np.concatenate(merged).ravel())
+               merged=np.concatenate(merged).ravel(), merge_group=np.concatenate(groups).ravel())
     if return_fields:
         out["fields"] = fields
     return out

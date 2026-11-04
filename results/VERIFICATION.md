@@ -10,6 +10,8 @@
 - **Failure rates are right in order of magnitude but probably optimistic on missing holes.** At 40 nm pitch the two failure cliffs meet around 10⁻⁶ at typical doses, consistent with imec. Two other simulators (ASML's and PROLITH) close holes more readily near the small-size cliff, so v2 may under-predict missing holes by up to ~10×. Pass 1's merged-hole numbers were inflated 5–8× by the bug.
 - **The best modern resists still beat the model by 46–110%.** Pass 2 tried the illumination those processes use (hexapole); it did not close the gap, so the gap is resist chemistry, not optics.
 
+- **Final checks before the dataset (Nov 4)** passed: optics confirmed a second way (within 0.35%), pixel, tile and fit convergence at the corners of the dataset domain, honest error bars, binomial failure counts (merges counted as events). See [DATASET.md](DATASET.md).
+
 **Safe description for the project:** "a literature-parameterized stochastic simulator that reproduces published hole-size variation for typical CAR processes within about ±30%, cross-checked against an independent semi-analytical model and a published commercial-simulator result, with order-of-magnitude (likely optimistic) failure-rate estimates." It should not be described as matching any specific fab or resist.
 
 ![Parity plot](verification_parity.png)
