@@ -1,0 +1,110 @@
+{
+ "P32_CD15_sharp_lowdose_f0.75": {
+  "px1": {
+   "n_holes": 5400,
+   "mean_cd": 10.67633,
+   "sigma_cd": 1.90359,
+   "lcdu_3s": 5.71078,
+   "p_missing": 0.32963,
+   "p_merged": 0.0
+  },
+  "px05": {
+   "n_holes": 2700,
+   "mean_cd": 10.6118,
+   "sigma_cd": 1.85825,
+   "lcdu_3s": 5.57475,
+   "p_missing": 0.30963,
+   "p_merged": 0.0
+  }
+ },
+ "P32_CD15_sharp_lowdose_f0.85": {
+  "px1": {
+   "n_holes": 5400,
+   "mean_cd": 12.27464,
+   "sigma_cd": 2.17102,
+   "lcdu_3s": 6.51306,
+   "p_missing": 0.09778,
+   "p_merged": 0.0
+  },
+  "px05": {
+   "n_holes": 2700,
+   "mean_cd": 12.3197,
+   "sigma_cd": 2.19154,
+   "lcdu_3s": 6.57462,
+   "p_missing": 0.10111,
+   "p_merged": 0.0
+  }
+ },
+ "P32_CD15_sharp_lowdose_f1.65": {
+  "px1": {
+   "n_holes": 5400,
+   "mean_cd": 22.98957,
+   "sigma_cd": 1.16612,
+   "lcdu_3s": 3.49836,
+   "p_missing": 0.0,
+   "p_merged": 0.20852
+  },
+  "px05": {
+   "n_holes": 2700,
+   "mean_cd": 22.96975,
+   "sigma_cd": 1.16854,
+   "lcdu_3s": 3.50563,
+   "p_missing": 0.0,
+   "p_merged": 0.20889
+  }
+ },
+ "P40_CD20_mid_f0.75": {
+  "px1": {
+   "n_holes": 5400,
+   "mean_cd": 13.83984,
+   "sigma_cd": 1.66961,
+   "lcdu_3s": 5.00882,
+   "p_missing": 0.06463,
+   "p_merged": 0.0
+  },
+  "px05": {
+   "n_holes": 2700,
+   "mean_cd": 13.89354,
+   "sigma_cd": 1.67227,
+   "lcdu_3s": 5.01682,
+   "p_missing": 0.05667,
+   "p_merged": 0.0
+  }
+ },
+ "P40_CD20_mid_f0.85": {
+  "px1": {
+   "n_holes": 5400,
+   "mean_cd": 16.66662,
+   "sigma_cd": 1.50449,
+   "lcdu_3s": 4.51346,
+   "p_missing": 0.00111,
+   "p_merged": 0.0
+  },
+  "px05": {
+   "n_holes": 2700,
+   "mean_cd": 16.66665,
+   "sigma_cd": 1.48678,
+   "lcdu_3s": 4.46035,
+   "p_missing": 0.00148,
+   "p_merged": 0.0
+  }
+ },
+ "P40_CD20_mid_f1.65": {
+  "px1": {
+   "n_holes": 5400,
+   "mean_cd": 27.91562,
+   "sigma_cd": 0.73605,
+   "lcdu_3s": 2.20814,
+   "p_missing": 0.0,
+   "p_merged": 0.00037
+  },
+  "px05": {
+   "n_holes": 2700,
+   "mean_cd": 27.99663,
+   "sigma_cd": 0.74937,
+   "lcdu_3s": 2.24811,
+   "p_missing": 0.0,
+   "p_merged": 0.00148
+  }
+ }
+}

@@ -87,20 +87,21 @@ def test_hole_measurement_ignores_specks_and_finds_bridges():
     disc_area = c[:20, :20].sum()
     a = c.copy()
     a[9, 19] = a[9, 20] = True                 # two specks touching across the cell border
-    area, merged = _measure_components(a[None], cell, nh)
+    area, merged, _ = _measure_components(a[None], cell, nh)
     assert not merged.any(), merged
     assert np.all(area == disc_area), area
     b = c.copy()
     b[9, 14:26] = True                         # a 1-pixel-wide bridge between holes 0 and 1
-    area, merged = _measure_components(b[None], cell, nh)
+    area, merged, group = _measure_components(b[None], cell, nh)
     assert merged[0].tolist() == [True, True, False, False], merged
+    assert group[0, 0] == group[0, 1] >= 0 and (group[0, 2:] == -1).all(), group   # one merge event
     d = c.copy()
     d[29, 34:40] = True; d[29, 0:7] = True     # bridge through the periodic tile edge (holes 3 and 2)
-    area, merged = _measure_components(d[None], cell, nh)
+    area, merged, _ = _measure_components(d[None], cell, nh)
     assert merged[0].tolist() == [False, False, True, True], merged
     e = np.zeros((40, 40), bool)
     e[5:10, 5:10] = True; e[10:15, 10:15] = True   # corner-to-corner only: not a bridge
-    area, merged = _measure_components(e[None], cell, nh)
+    area, merged, _ = _measure_components(e[None], cell, nh)
     assert not merged.any() and area[0, 0] == 25, (area, merged)
 
 

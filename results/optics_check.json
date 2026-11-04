@@ -1,0 +1,66 @@
+{
+ "P32_CD16_quasar": {
+  "peak_fft": 0.36340251415438257,
+  "peak_analytic": 0.3626261765136164,
+  "max_abs_diff_rel_peak": 0.0021408758965782873,
+  "mean_ratio_in_holes": 1.0019696349556702,
+  "min_fft": 0.003675337424151333,
+  "min_analytic": 0.0036475870918142653
+ },
+ "P40_CD20_quasar": {
+  "peak_fft": 0.4478084205548192,
+  "peak_analytic": 0.4470925907159543,
+  "max_abs_diff_rel_peak": 0.0016010773914179903,
+  "mean_ratio_in_holes": 1.001512205811631,
+  "min_fft": 0.0011474923085579237,
+  "min_analytic": 0.001155492816925173
+ },
+ "P48_CD24_mask26_quasar": {
+  "peak_fft": 0.5395451235758523,
+  "peak_analytic": 0.5389781798136659,
+  "max_abs_diff_rel_peak": 0.0010518862978506278,
+  "mean_ratio_in_holes": 1.0009741792165368,
+  "min_fft": 0.002677317329440286,
+  "min_analytic": 0.002687816322836666
+ },
+ "P64_CD30_quasar": {
+  "peak_fft": 0.7334773097218269,
+  "peak_analytic": 0.7328655397251089,
+  "max_abs_diff_rel_peak": 0.0008347643101745126,
+  "mean_ratio_in_holes": 1.000763786062741,
+  "min_fft": 0.009310302622333424,
+  "min_analytic": 0.009304730312512432
+ },
+ "P50_CD23_mask24_small_annular": {
+  "peak_fft": 0.4770152898228096,
+  "peak_analytic": 0.4764759457800252,
+  "max_abs_diff_rel_peak": 0.001131943905168171,
+  "mean_ratio_in_holes": 1.0010512486681162,
+  "min_fft": 0.007168322145554927,
+  "min_analytic": 0.00716058423413477
+ },
+ "P52_mask31_NA025_quasar": {
+  "peak_fft": 0.6541021635936942,
+  "peak_analytic": 0.6551779298044047,
+  "max_abs_diff_rel_peak": 0.0016419451293670797,
+  "mean_ratio_in_holes": 0.9985201668194996,
+  "min_fft": 0.007446064669007816,
+  "min_analytic": 0.007408919203050337
+ },
+ "hex_46x40_hexapole": {
+  "peak_fft": 0.6360255467664637,
+  "peak_analytic": 0.6352280912702838,
+  "max_abs_diff_rel_peak": 0.0012553844943895376,
+  "mean_ratio_in_holes": 1.0011603213808593,
+  "min_fft": 0.021235553695194368,
+  "min_analytic": 0.021285321161374552
+ },
+ "P36_CD18_mask17.3_quasar": {
+  "peak_fft": 0.40318261681226647,
+  "peak_analytic": 0.40459237916787777,
+  "max_abs_diff_rel_peak": 0.0034844016550948076,
+  "mean_ratio_in_holes": 0.9966941115124591,
+  "min_fft": 0.0007786032238111863,
+  "min_analytic": 0.0007661078442783039
+ }
+}

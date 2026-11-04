@@ -219,5 +219,6 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# Large generated datasets (keep out of git)
-data/
+# Large generated datasets (keep out of git); the small pilot is kept so the ML code can be built on it
+data/*
+!data/pilot/
