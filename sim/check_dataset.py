@@ -8,6 +8,7 @@ Usage: python check_dataset.py ../data/pilot
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import sys
@@ -37,10 +38,18 @@ def main(path):
     P = pd.read_csv(rep_path) if os.path.exists(rep_path) and os.path.getsize(rep_path) > 0 else pd.DataFrame()
 
     # ---- provenance
-    sha = file_sha256(os.path.join(HERE, "simulator_v2.py"))
-    check("simulator version", "PASS" if sha == meta["simulator_sha256"] else "WARN",
-          f"dataset made with simulator sha256 {meta['simulator_sha256'][:12]}, git {meta['git_commit'][:7]}; "
-          f"current file {'matches' if sha == meta['simulator_sha256'] else 'DIFFERS'}")
+    sim_path = os.path.join(HERE, "simulator_v2.py")
+    sha = file_sha256(sim_path)                                  # newline-normalised (LF)
+    body = open(sim_path, "rb").read().replace(b"\r\n", b"\n")
+    sha_crlf = hashlib.sha256(body.replace(b"\n", b"\r\n")).hexdigest()
+    rec = meta["simulator_sha256"]
+    # Datasets made before file_sha256 normalised newlines recorded the raw digest of
+    # whatever git checked out, so a run on Windows recorded the CRLF digest. Accept it.
+    same = rec in (sha, sha_crlf)
+    note = "matches" if rec == sha else \
+        "matches (recorded on a CRLF checkout, before the hash was newline-normalised)" if same else "DIFFERS"
+    check("simulator version", "PASS" if same else "WARN",
+          f"dataset made with simulator sha256 {rec[:12]}, git {meta['git_commit'][:7]}; current file {note}")
     check("run finished", "PASS" if "finished" in meta else "WARN",
           f"{len(R)} of {meta['n_resists']} sampled resists processed")
 

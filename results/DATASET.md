@@ -93,14 +93,62 @@ A model that beats those R² values is fitting simulation noise.
 - Missing-hole rates near the small-size cliff are probably too low, by up to ~10× (two other simulators close holes more readily).
 - Square arrays, NA 0.33 and quasar illumination only. No focus, mask 3D effects or flare. Simple threshold development. The 1 nm pixel is part of the model's definition, and the pixel check above shows it has no effect once each resist is fitted.
 
+## The generated full dataset (2026-11-04)
+
+Generated on the project PC (Ryan's 9800X3D, 8 cores, 32 GB) in **1 h 48 min**: 3,000 samples,
+**2,520 accepted (84%), 20,160 rows**. Seed 20261116, simulator git `111048d`. QA report kept at
+`results/qa_full.json` and `results/qa_full.md`; **overall PASS**, no WARN or FAIL.
+
+The data itself is not in git (see `.gitignore`) — regenerate it with the command below, or restore
+from the project backup. Everything needed to reproduce it byte-for-byte is in `metadata.json`.
+
+Results worth carrying into the report:
+
+| Check | Pilot (50 resists) | Full (2,520 resists) |
+| --- | --- | --- |
+| Monotonic dose response | 0 violations / 347 steps | **0 violations / 17,473 steps** |
+| Error bars vs repeat runs | 1.10 and 0.71 (15 replicates) | **1.03 and 1.05 (722 replicates)** |
+| Nominal LCDU | 2.53–4.88 nm, median 3.38 | 1.75–6.27 nm, median 3.36 (published typical CAR 2–5) |
+| MC vs semi-analytical | 0 / 50 outside 0.80–1.10 | **0 / 2,520 outside 0.80–1.10** |
+| Best honest R² ceiling | ~0.997 | ~0.998 |
+
+Three things the ML pipeline has to handle:
+
+- **52 rows have no surviving hole at all** (total collapse at the lowest doses). `mean_cd_nm` and
+  `sigma_cd_nm` are NaN by design. They are valid rows for the *failure* model (`p_missing` = 1) and
+  must be dropped from the size models.
+- **6 of 2,520 resists have no process window** — they lose >1% of holes even at their nominal dose.
+  Kept and flagged; they are real points in the domain, not errors.
+- **480 rejections**: 431 needed quencher outside the published 0.012–0.09 range (both tails, 0.005 to
+  0.165 — the pilot only ever hit the high tail), and 49 fell below the 15 nm minimum CD.
+
+### Note on the simulator hash
+
+`file_sha256` now normalises newlines to LF before hashing. git checks source out with CRLF on Windows
+and LF on Linux, so hashing raw bytes gave two digests for identical code and the provenance check fired
+on a platform difference. `data/full`'s metadata predates the fix and holds the CRLF digest
+(`52c642bf…`, the same code as the LF digest `6991abac…`); `check_dataset.py` accepts either and says
+which it matched.
+
 ## Generating the full dataset
 
 ```bash
 cd sim
-python make_dataset.py --out ../data/full --n-resists 1500 --workers 8
+python make_dataset.py --out ../data/full --n-resists 3000 --workers 8
 python check_dataset.py ../data/full
 python replicate_check.py ../data/full 80
 ```
+
+An independent held-out test set needs only a different seed — the Latin hypercube is seeded, so this
+is a genuinely separate design over the same domain, not a subset:
+
+```bash
+python make_dataset.py --out ../data/test --n-resists 400 --workers 8 --seed 999
+```
+
+**`resist_id` restarts at 0 in every run.** `data/full` is 0–2999 and `data/test` is 0–399, so the two
+collide. If the files are ever concatenated, build a composite group key (`full_0142` vs `test_0142`)
+before any `GroupKFold`, or the held-out set silently stops being held out.
 
 - **Runtime:** about 34 s per sample on one core (42 s accepted, 12 s rejected). 1,500 samples give ~1,250 resists and ~10,000 rows: ~14 hours on one core, ~2 hours with 8 workers. With 1,000 samples (~6,600 rows) the time drops by a third.
 - **Resuming:** re-run the same command. It refuses to resume if the simulator or the settings changed.
