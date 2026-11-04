@@ -1,0 +1,81 @@
+{
+ "P1b_severi_H80V46_rows_hexapole": {
+  "measured": [
+   2.64,
+   2.8
+  ],
+  "rho_q": 0.07635312214945054,
+  "n_holes": 4000,
+  "mean_cd": 23.99398227155536,
+  "sigma_cd": 0.792273623285799,
+  "lcdu_3s": 2.376820869857397,
+  "p_missing": 0.0,
+  "p_merged": 0.0
+ },
+ "P1b_severi_H80V46_rows_annular": {
+  "measured": [
+   2.64,
+   2.8
+  ],
+  "rho_q": 0.06674009947869756,
+  "n_holes": 4000,
+  "mean_cd": 24.002697738291538,
+  "sigma_cd": 0.81891089329795,
+  "lcdu_3s": 2.45673267989385,
+  "p_missing": 0.0,
+  "p_merged": 0.0
+ },
+ "P1b_severi_H70V40_rows_hexapole": {
+  "measured": [
+   2.29,
+   2.48
+  ],
+  "rho_q": 0.07983957908452712,
+  "n_holes": 4000,
+  "mean_cd": 24.058502339706745,
+  "sigma_cd": 0.7273308318129873,
+  "lcdu_3s": 2.181992495438962,
+  "p_missing": 0.0,
+  "p_merged": 0.0
+ },
+ "P1b_severi_H70V40_rows_annular": {
+  "measured": [
+   2.29,
+   2.48
+  ],
+  "rho_q": 0.0695745021196621,
+  "n_holes": 4000,
+  "mean_cd": 24.037447059499346,
+  "sigma_cd": 0.8244396027369597,
+  "lcdu_3s": 2.473318808210879,
+  "p_missing": 0.0,
+  "p_merged": 0.0
+ },
+ "P1b_severi_H66V38_rows_hexapole": {
+  "measured": [
+   2.35,
+   2.55
+  ],
+  "rho_q": 0.07993730657508254,
+  "n_holes": 4000,
+  "mean_cd": 24.010923544948614,
+  "sigma_cd": 0.732583368805645,
+  "lcdu_3s": 2.197750106416935,
+  "p_missing": 0.0,
+  "p_merged": 0.0
+ },
+ "P1b_severi_H66V38_rows_annular": {
+  "measured": [
+   2.35,
+   2.55
+  ],
+  "rho_q": 0.07073303334596155,
+  "n_holes": 4000,
+  "mean_cd": 24.01732134127988,
+  "sigma_cd": 0.8490429480233019,
+  "lcdu_3s": 2.547128844069906,
+  "p_missing": 0.0,
+  "p_merged": 0.0
+ },
+ "_runtime_s": 122.68961119651794
+}

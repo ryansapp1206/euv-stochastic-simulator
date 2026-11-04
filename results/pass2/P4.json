@@ -1,0 +1,80 @@
+{
+ "P4_vanIngenSchenau2013": {
+  "published_lcdu": 3.2,
+  "knob": "rho_q",
+  "fitted": 0.03480303983499829,
+  "n_holes": 13500,
+  "mean_cd": 23.99242682370282,
+  "sigma_cd": 1.00862439361446,
+  "lcdu_3s": 3.02587318084338,
+  "p_missing": 0.0,
+  "p_merged": 0.0
+ },
+ "P4_goethals2013_C31P52": {
+  "published_lcdu": 3.3,
+  "knob": "rho_q",
+  "fitted": 0.04884044363838326,
+  "n_holes": 13500,
+  "mean_cd": 26.04911596616005,
+  "sigma_cd": 0.9422056775834897,
+  "lcdu_3s": 2.826617032750469,
+  "p_missing": 0.0,
+  "p_merged": 0.0
+ },
+ "P4_asml_P40": {
+  "published_lcdu": 2.4,
+  "knob": "rho_q",
+  "fitted": 0.059181960548269394,
+  "n_holes": 13500,
+  "mean_cd": 19.990536831194657,
+  "sigma_cd": 1.0024286958456485,
+  "lcdu_3s": 3.0072860875369454,
+  "p_missing": 0.0,
+  "p_merged": 0.0
+ },
+ "P4_asml_P36": {
+  "published_lcdu": 2.6,
+  "knob": "rho_q",
+  "fitted": 0.05936323076817859,
+  "n_holes": 13500,
+  "mean_cd": 18.002036496570593,
+  "sigma_cd": 1.0269490985084213,
+  "lcdu_3s": 3.080847295525264,
+  "p_missing": 0.0,
+  "p_merged": 0.0
+ },
+ "P4_asml_P34": {
+  "published_lcdu": 2.7,
+  "knob": "rho_q",
+  "fitted": 0.05773392510127516,
+  "n_holes": 13500,
+  "mean_cd": 17.040236625969737,
+  "sigma_cd": 1.0561356722453263,
+  "lcdu_3s": 3.168407016735979,
+  "p_missing": 0.0,
+  "p_merged": 0.0
+ },
+ "P4_asml_P32": {
+  "published_lcdu": 3.0,
+  "knob": "rho_q",
+  "fitted": 0.05654568320098009,
+  "n_holes": 13500,
+  "mean_cd": 15.953065107325896,
+  "sigma_cd": 1.2939557755767395,
+  "lcdu_3s": 3.8818673267302186,
+  "p_missing": 0.00014814814814814815,
+  "p_merged": 0.0
+ },
+ "P4_naulleau_model": {
+  "published_lcdu": 3.45,
+  "knob": "k_amp",
+  "fitted": 296.3446920182478,
+  "n_holes": 14400,
+  "mean_cd": 17.135163944755195,
+  "sigma_cd": 1.2488264454893097,
+  "lcdu_3s": 3.746479336467929,
+  "p_missing": 0.0,
+  "p_merged": 0.0005555555555555556
+ },
+ "_runtime_s": 127.69717931747437
+}
