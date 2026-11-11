@@ -1,6 +1,6 @@
 # Simulator v2 verification
 
-*Nov 3, 2026, two independent passes. Every number is reproducible from `sim/`: `python calibrate.py`, `python verify.py`, `python extra_checks.py`, `python window_check.py 1`, `python analytic_check.py` (plus `python analytic_check.py linearity`), `python pass2_checks.py P1 P1b P1c P2 P2b P3 P4 P5 P6`, `python compare_passes.py`, then `python make_figures.py` and `python make_verification_figure.py`. Pass 1 outputs are kept in `results/pass1/`.*
+*Nov 3, 2026, two independent passes; audit addendum added Nov 10 (see below). Every number is reproducible from `sim/`: `python calibrate.py`, `python verify.py`, `python extra_checks.py`, `python window_check.py 1`, `python analytic_check.py` (plus `python analytic_check.py linearity`), `python pass2_checks.py P1 P1b P1c P2 P2b P3 P4 P5 P6`, `python compare_passes.py`, then `python make_figures.py` and `python make_verification_figure.py`. Pass 1 outputs are kept in `results/pass1/`.*
 
 ## Bottom line (after both passes)
 
@@ -15,6 +15,53 @@
 **Safe description for the project:** "a literature-parameterized stochastic simulator that reproduces published hole-size variation for typical CAR processes within about ±30%, cross-checked against an independent semi-analytical model and a published commercial-simulator result, with order-of-magnitude (likely optimistic) failure-rate estimates." It should not be described as matching any specific fab or resist.
 
 ![Parity plot](verification_parity.png)
+
+
+## Audit addendum (Nov 10, 2026): corrections and process matching
+
+A third check re-derived the constants, re-checked the optics, re-ran the simulator under the conditions of measured NA 0.33 contact-hole data, and re-read the sources for process type. Scripts: `sim/audit/` (`audit_constants.py`, `audit_optics.py`, `audit_labels.py`, `audit_compare.py`). No simulator code or parameter range was changed. Where this addendum disagrees with the text below, **this addendum wins**.
+
+**What was re-confirmed.** All 12 first-principles constants and formulas reproduce (photon energy, photons per nm² per mJ/cm², Beer-Lambert, layer sums, open-frame normalization, pupil capture, acid and deprotection kinetics). An analytic diffraction-order image agrees with the FFT image to 0.17-0.43% of peak.
+
+**Corrections to the text below**
+1. **"Eight comparisons" are five distinct sources** (Severi/imec, Goethals, ASML, Naulleau, Wang/van Ingen Schenau) with several points each. They also mix process types, so the ±30% claim rests on fewer independent anchors than "eight" suggests.
+2. **ASML 2021, 2.0 nm (P40) is a non-chemically-amplified (metal-oxide) resist.** It is not a CAR and is not a like-for-like comparison. Only the 2018 value (2.7 nm) is CAR. The "+92%" row and the "best modern CAR" wording should be read that way.
+3. **ASML's 79 mJ/cm² for <10⁻⁶ defects is a photon-noise-only simulation.** Real resists add acid and chemistry noise, so a real window needs at least as much dose. v2 (which includes those terms and still opens its window at ~55 mJ/cm²) is therefore more optimistic on failure rates than the comparison implied.
+4. **Naulleau et al., JM3 2018 is a line/space paper at NA 0.3.** It supplies resist parameter values only. It has no contact-hole LCDU and does not define "range". The contact-hole "Naulleau model" comparison comes from the escholarship "Extreme Stochastic Events" paper; neither is measured data.
+5. **PAG upper range (0.30 /nm³) is above published values** (0.04-0.2, AIP Advances 2025; 0.2, Mack 2011). PAG density and absorptivity/QE are sampled independently here; in real resists they are linked.
+6. **Hole-size labels are survivor-conditioned.** `sigma_cd` and LCDU are computed over holes that are neither missing nor merged, so near either cliff they are biased and can be non-monotone. 52 rows have no survivors and must be dropped for size models.
+7. **Illumination is idealized.** Quasar poles are circles at an analytic position, clipped to σ 0.3-0.9 (13.1% of dataset rows are in the clipped regime). Swapping to a measured-style quad or annular source moves LCDU by about 24%.
+8. **Array geometry.** v2 simulates a square periodic tile. Real imec arrays are often staggered (e.g. 80 × 46 nm).
+
+**Process-type classification of the sources**
+
+| Source | Tool / NA | Resist | Data type | Like-for-like for LCDU? |
+| --- | --- | --- | --- | --- |
+| Shin-Etsu patents (new), P46, 23 nm holes, 60 nm film, 30-36 mJ/cm² | NXE-class, 0.33 | CAR | Measured CDU (includes SEM and mask error) | **Yes** |
+| imec/ASML NXE:3400 P36 18 nm holes (new) | NXE:3400, 0.33 | CAR | Measured | **Yes** |
+| imec/ASML P40 (3.0 / 2.6 nm) | NXE:3300/3400, 0.33 | CAR (conditions partly unknown) | Measured | Partly |
+| Severi/Mack 2021 (24 nm staggered 80 × 46) | NXE:3400, 0.33, hexapole | CAR, 50 nm | Measured, stochastic-only 2.6 nm | Yes for the numbers; dose not recoverable from accessible text |
+| Goethals 2013 | NXE:3100, NA 0.25 | CAR, 60 nm | Measured total | Partly (older tool, total includes mask and metrology) |
+| ASML 2018 best CAR / 2021 | 0.33 | 2018 CAR; **2021 non-CAR** | Industry slides | 2018 partly; 2021 no |
+| ASML 79 mJ/cm² | 0.33 | n/a | **Simulation, photon noise only** | Trend only |
+| Wang 2019 | Interference lithography | Organic | Measured, different tool | No |
+| Naulleau model | n/a | CAR | Model vs model | Cross-check only |
+
+**New like-for-like runs** (quencher re-fitted per run; every fit landed inside 0.012-0.09 /nm³; LCDU is stochastic-only 3σ over survivors):
+
+| Case | Measured | Simulator v2 |
+| --- | --- | --- |
+| P46, 23 nm, 60 nm film, quad σ 0.6-0.9 (30° and 90° openings), 30 and 36 mJ/cm², absorptivity 4.2 and 5.3 /µm | 3.0-3.4 nm (Shin-Etsu) | 2.60-3.23 nm (model quasar: 2.92 / 2.75) |
+| P36, 18 nm holes, 33 / 45 / 60 mJ/cm² | 3.6-4.6 nm (imec/ASML) | Quasar 3.36-4.13; quad 3.63-4.49; annular 5.35-6.56 (0.04-0.22% missing) |
+| P40, 20 nm holes, 40-70 mJ/cm² | 3.0 and 2.6 nm (imec/ASML; doses not paired) | 3.16-3.65 nm: +5% to +22% against 3.0, +22% to +40% against 2.6 |
+
+Measured values include SEM metrology and mask error, so a stochastic-only model should read lower than measured. v2 is at or slightly below measured for the P46 and P36 CAR cases and above measured at P40.
+
+**Defensible claim after the audit**
+- LCDU for typical CAR contact holes at NA 0.33: within about ±30% of measured values, with illumination idealization alone worth about ±24%.
+- Failure (missing/merged) rates: order of magnitude only, and optimistic.
+- Not covered: best-in-class modern resists, metal-oxide resists, mask 3D effects, defocus and aberrations, etch, staggered layouts.
+- ML conclusions are statements about learning from this simulator, which is validated against published data but is not a fab predictor.
 
 ## Cross-verification (pass 2)
 
@@ -171,12 +218,12 @@ Every number reproduces within 2%, so the comparisons are not luck of the draw.
 | Claim used | Source | How verified | Status |
 | --- | --- | --- | --- |
 | 24 nm holes, staggered 80 × 46 nm, 80 mJ/cm², after develop, stochastic LCDU 2.6 nm | Severi et al. 2021 | Abstract + authors' PDF (via search) | Confirmed |
-| CAR parameter set (QE 3, PAG 0.2, quencher 0.085, protecting groups 2 /nm³, 4.2 /µm, 35 nm, ranges 12/4/3 nm, threshold development) | Naulleau, Bhattarai, Neureuther | Full text read | Confirmed; "range" undefined in the paper |
+| CAR parameter set (QE 3, PAG 0.2, quencher 0.085, protecting groups 2 /nm³, 4.2 /µm, 35 nm, ranges 12/4/3 nm, threshold development) | Naulleau, Bhattarai, Neureuther | Full text read | Confirmed as parameter values; "range" undefined; JM3 2018 is a line/space paper at NA 0.3 with no contact-hole LCDU |
 | CD 15 / 17.4 / 19.5 / 21.2 nm at 30 / 33 / 36 / 39 mJ/cm²; ~10% closing at 15 nm | Yen 2018 slides | Full slides read | Confirmed; simulations |
 | Dose-to-size 31.7 / 33.5 mJ/cm², 1σ LCDU 1.1 / 1.7 nm, NA 0.25, 60 nm film, quasar | Goethals et al. 2013 | Full slides read | Confirmed; corrected CDs |
 | 0.33 NA, 40 nm CAR: LCDU 2.4 / 2.6 / 2.7 / 3.0 / 3.6 nm at P40–P30, 63–73 mJ/cm² | ASML 2024 investor presentation (SEC exhibit 99.4) | Full text read | Confirmed numbers; measured vs simulated and pattern type not stated |
-| P40 CAR LCDU 2.7 / 2.2 / 2.1 / 2.0 nm at 66 / 65 / 61 / 53 mJ/cm² (2018–2021) | ASML, EUVL Workshop 2021 | Slides read | Confirmed numbers; conditions partly unknown |
-| P40 dense holes at 0.33 NA need 79 mJ/cm² for <10⁻⁶ defect rate | ASML, EUVL Workshop 2021 | Slides read | Confirmed; simulated |
+| P40 LCDU 2.7 / 2.2 / 2.1 / 2.0 nm at 66 / 65 / 61 / 53 mJ/cm² (2018–2021) | ASML, EUVL Workshop 2021 | Slides read | Confirmed numbers; conditions partly unknown; the 2.0 nm (2021) entry is non-CAR |
+| P40 dense holes at 0.33 NA need 79 mJ/cm² for <10⁻⁶ defect rate | ASML, EUVL Workshop 2021 | Slides read | Confirmed; simulated with photon noise only |
 | 24 nm HP regular holes: LCDU 3.2 nm (small annular, 31 mJ/cm² resist) | van Ingen Schenau 2013 (ASML) | Slides via search | Confirmed numbers; sigma values assumed |
 | Cliffs "touch at around 1 ppm" at 40 nm pitch | imec via SemiWiki 2019 | Article text | Confirmed (dose not stated) |
 | Absorptivity 4.2–5.3 /µm (CAR), 15–19 /µm (metal oxide); films 25–45 nm | Fallica 2015 | Full poster read | Confirmed |
@@ -195,7 +242,7 @@ Every number reproduces within 2%, so the comparisons are not luck of the draw.
 | Goethals 2013, 26 nm holes, NA 0.25 | Measured total | 3.3 nm | 2.75 nm | −17% (about +6% if ~80% of the total is stochastic, as in Severi) |
 | ASML 2024, P40 / P36 / P34 / P32 | Industry, conditions partly unknown | 2.4 / 2.6 / 2.7 / 3.0 nm | 2.93 / 3.03 / 3.07 / 3.80 nm | +22% / +16% / +14% / +27% |
 | ASML 2024, P30 | Industry, near resolution limit | 3.6 nm | 5.48 nm | +52%; v2's square-array setup is past its limit (26% merged) |
-| ASML best CAR 2018 / 2021, P40 | Industry; hexagonal pattern approximated | 2.7 / 2.0 nm | 3.63 / 3.83 nm | +35% / +92% |
+| ASML best CAR 2018 / 2021, P40 | Industry; hexagonal pattern approximated; **2021 value is a non-CAR resist** | 2.7 / 2.0 nm | 3.63 / 3.83 nm | +35% / +92% |
 | Naulleau model, 16 nm HP | Published model | 3.45 nm | 3.55 nm | +3% |
 | Goethals 2013, 24 nm (no process window) | Measured total | 5.1 nm | 2.76 nm | Not comparable |
 | Wang 2019 (interference lithography) | Measured, different tool | 2.2–2.3 nm | 4.5 nm | Not comparable |
