@@ -89,7 +89,7 @@ A model that beats those R² values is fitting simulation noise.
 
 ## Known biases (from VERIFICATION.md)
 
-- LCDU is within about ±30% of published typical CAR processes; the best modern resists are 46–110% better.
+- LCDU is within about ±30% of published typical CAR processes; ASML's best 2018/2021 resists are 46–110% better, but those are non-CAR (see VERIFICATION.md, Nov 25 correction).
 - Missing-hole rates near the small-size cliff are probably too low, by up to ~10× (two other simulators close holes more readily).
 - Square arrays, NA 0.33 and quasar illumination only. No focus, mask 3D effects or flare. Simple threshold development. The 1 nm pixel is part of the model's definition, and the pixel check above shows it has no effect once each resist is fitted.
 

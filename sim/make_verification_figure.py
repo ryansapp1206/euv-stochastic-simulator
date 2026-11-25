@@ -28,8 +28,10 @@ pts = [  # (label, published, simulated, group)
     ("ASML P36", 2.6, p2["P4_asml_P36"]["lcdu_3s"], "industry"),
     ("ASML P34", 2.7, p2["P4_asml_P34"]["lcdu_3s"], "industry"),
     ("ASML P32", 3.0, p2["P4_asml_P32"]["lcdu_3s"], "industry"),
-    ("ASML best resist 2018", 2.7, p2["P3_asml_hexP40_2018_hexapole"]["lcdu_3s"], "industry"),
-    ("ASML best resist 2021", 2.0, p2["P3_asml_hexP40_2021_hexapole"]["lcdu_3s"], "industry"),
+    # ASML/imec P40 hexagonal pillars/CH: the source slides label these resists non-CAR,
+    # so they are not like-for-like with v2's chemically amplified resist model
+    ("ASML non-CAR 2018", 2.7, p2["P3_asml_hexP40_2018_hexapole"]["lcdu_3s"], "industry"),
+    ("ASML non-CAR 2021", 2.0, p2["P3_asml_hexP40_2021_hexapole"]["lcdu_3s"], "industry"),
     ("Naulleau model", 3.45, p2["P4_naulleau_model"]["lcdu_3s"], "model"),
     ("PROLITH 2017 study", 3.12, next(r for r in p2["P2_mack2017_prolith"]["sweep"] if r["mask_cd"] == 24.0)["lcdu_3s"],
      "model"),
@@ -52,14 +54,14 @@ ax.plot(x, x, color=INK2, lw=0.8)
 seen = set()
 offsets = {"ASML P36": (7, -9), "ASML P34": (7, 3), "ASML P40": (-60, 4), "Naulleau model": (7, -3),
            "van Ingen Schenau 2013": (7, -3), "Goethals 2013, 26 nm*": (7, -9), "ASML P32": (7, -3),
-           "ASML best resist 2018": (7, -3), "ASML best resist 2021": (7, -3), "PROLITH 2017 study": (7, 2)}
+           "ASML non-CAR 2018": (7, -3), "ASML non-CAR 2021": (7, -3), "PROLITH 2017 study": (7, 2)}
 for lab, pub, sim, g in pts:
     c, m, name = style[g]
     ax.plot(pub, sim, m, color=c, ms=8, mec=SURFACE, mew=1.5, label=None if g in seen else name, zorder=3)
     seen.add(g)
-    right = lab in ("ASML best resist 2018", "ASML P40")
+    right = lab in ("ASML non-CAR 2018", "ASML P40")
     ax.annotate(f"{lab} ({(sim - pub) / pub:+.0%})", (pub, sim),
-                xytext=(-9, -3) if lab == "ASML best resist 2018" else (-12, 7) if lab == "ASML P40"
+                xytext=(-9, -3) if lab == "ASML non-CAR 2018" else (-12, 7) if lab == "ASML P40"
                 else offsets.get(lab, (7, 0)),
                 textcoords="offset points", fontsize=8, color=INK, ha="right" if right else "left")
 
@@ -79,7 +81,9 @@ for i, (tag, pub, rows, hexa) in enumerate(severi):
 ax.set_xlim(1.5, 4.0); ax.set_ylim(1.5, 5.6)
 ax.set_xlabel("Published LCDU, 3σ (nm)", color=INK)
 ax.set_ylabel("Simulator v2 LCDU, 3σ (nm)", color=INK)
-ax.set_title("Typical processes: −14% to +31%. The best modern resists and the tightest\n"
+# headline range is computed from the eight typical-process points, not typed in
+typical = [(s - p) / p for lab, p, s, g in pts if "non-CAR" not in lab]
+ax.set_title(f"Typical processes: {min(typical):+.0%} to {max(typical):+.0%}. ".replace("-", "−") + "ASML's non-CAR resists and the tightest\n"
              "hexagonal reading do not match, and the Severi layout is ambiguous.",
              loc="left", fontsize=10.5, color=INK)
 ax.legend(frameon=False, fontsize=8, loc="lower right")

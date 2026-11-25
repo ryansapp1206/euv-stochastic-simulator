@@ -4,7 +4,7 @@
 
 ## Verdict
 
-Simulator v2 produces realistic numbers for a typical chemically amplified resist. Hole-to-hole size variation (LCDU) lands between −14% and +29% across eight comparisons with typical processes (measured data, industry data and two other models). The best modern resists do 30–50% better than the model. Printed size versus dose matches an ASML simulation within 5%, and every qualitative trend in the literature appears. The resist parameter that gets fitted (quencher loading) always lands inside its published range.
+Simulator v2 produces realistic numbers for a typical chemically amplified resist. Hole-to-hole size variation (LCDU) lands between −14% and +29% across eight comparisons with typical processes (measured data, industry data and two other models). The best modern resists do 30–50% better than the model (these are non-CAR resists, so not like-for-like; see VERIFICATION.md, Nov 25 correction). Printed size versus dose matches an ASML simulation within 5%, and every qualitative trend in the literature appears. The resist parameter that gets fitted (quencher loading) always lands inside its published range.
 
 The weakest part is the **absolute rate of missing holes**. The failure cliffs have the right shape and roughly the right level (consistent with imec's ~1 ppm floor at 40 nm pitch), but rates are uncertain by about an order of magnitude. Treat them as estimates.
 

@@ -8,9 +8,18 @@
 - **The Monte Carlo itself is right.** A separate calculation that uses no random numbers (linear noise propagation) predicts the same photon and acid noise within 1–3% in all five test cases. The only gap (quencher noise, 9–12%) is explained and goes away where the theory is valid.
 - **Pass 2 found two bugs and fixed them, plus one source detail pass 1 got wrong.** The merged-hole flag counted stray specks as merges, and mask holes were rounded to whole pixel pairs. Pass 1's best anchor, "within 8% of Severi 2021", is **withdrawn**: the paper's array layout can be read two ways, and the match ranges from −23% to +7% depending on the reading and illumination. Under the hexagonal reading, the tightest Severi array is missed badly (+43% to +113%).
 - **Failure rates are right in order of magnitude but probably optimistic on missing holes.** At 40 nm pitch the two failure cliffs meet around 10⁻⁶ at typical doses, consistent with imec. Two other simulators (ASML's and PROLITH) close holes more readily near the small-size cliff, so v2 may under-predict missing holes by up to ~10×. Pass 1's merged-hole numbers were inflated 5–8× by the bug.
-- **The best modern resists still beat the model by 46–110%.** Pass 2 tried the illumination those processes use (hexapole); it did not close the gap, so the gap is resist chemistry, not optics.
+- **ASML's best resists (2018 / 2021) still beat the model by 46–110%, but they are not like-for-like.** The source slides list both as **non-CAR** resists printing P40 hexagonal pillars/contact holes (see the Nov 25 correction below), while v2 models a chemically amplified resist. Pass 2 tried the illumination those processes use (hexapole); it did not close the gap, which fits a resist-chemistry difference rather than optics.
 
 - **Final checks before the dataset (Nov 4)** passed: optics confirmed a second way (within 0.35%), pixel, tile and fit convergence at the corners of the dataset domain, honest error bars, binomial failure counts (merges counted as events). See [DATASET.md](DATASET.md).
+
+### Correction (Nov 25, 2026)
+
+Re-checking the sources against the report found two errors in this file and its figure. Neither changes any simulator number.
+
+| What was wrong | What the source shows | Fixed in |
+| --- | --- | --- |
+| The ASML 2018 / 2021 P40 points (2.7 / 2.0 nm) were listed as "P40 CAR LCDU" and called the best CAR resists | The ASML slide (van Schoot, EUVL Workshop 2021, slide 28) and the underlying imec/ASML talk (Santaclara et al., EUVL Workshop 2021, P51, slide 7) label the 2018 and 2021 entries **non-CAR**, for **P40 hexagonal pillars/CH**. The 2020 entry (2.1 nm) is the CAR one. The slide text is partly garbled, so this is the best reading; the Nov 10 audit reached the same conclusion for 2021. | Bottom line, pass 2 table, "ASML best resists" paragraph, source checks below, parity figure labels |
+| Parity figure headline said "−14% to +31%" | The plotted points give −14% to +29% (ASML P32 is the maximum), matching every table here. The headline was typed in by hand. | `make_verification_figure.py` now computes the headline from the data |
 
 **Safe description for the project:** "a literature-parameterized stochastic simulator that reproduces published hole-size variation for typical CAR processes within about ±30%, cross-checked against an independent semi-analytical model and a published commercial-simulator result, with order-of-magnitude (likely optimistic) failure-rate estimates." It should not be described as matching any specific fab or resist.
 
@@ -44,7 +53,7 @@ Also noted: in the high-quencher Naulleau case the deprotection-rate fit is poor
 | Severi 2021 match | +8% | −13% to +7% (rows reading), −23% or −7% (hexagonal, hexapole or annular) | **Disagree.** Pass 1 was over-confident; the layout is ambiguous |
 | Naulleau model | +3% | +9% | Agree within the band |
 | Another simulator (PROLITH, 2017 study) | not checked | +2% (one layer), +8% (five layers) | New agreement |
-| Best modern resists (ASML 2018 / 2021) | +35% / +92% | +46% / +110% with hexapole (+40% / +102% annular) | Agree: model is conservative against the state of the art |
+| Best modern resists (ASML 2018 / 2021; non-CAR per the slides) | +35% / +92% | +46% / +110% with hexapole (+40% / +102% annular) | Agree, but not like-for-like: a non-CAR process against a CAR model |
 | ASML P30 | +52%, "past the model's limit (26% merged)" | +79%, only 1.2% merged | Number agrees in direction; **pass 1's explanation was the bug** |
 | Interference lithography (Wang 2019) | not comparable, "most holes merged" | not comparable, 3× too high, few merges | Same conclusion; pass 1's explanation was the bug |
 | Severi sensitivity range | 2.64–3.20 nm | 2.67–3.32 nm | Agree |
@@ -102,7 +111,7 @@ Under the rows reading, v2 matches all three within −13% to +4% and reproduces
 
 v2 sits below the totals, as it should, since the totals also contain mask and metrology error. Its dose trend is weaker than the data (1.19× from 31.7 to 18.1 mJ/cm² against 1.36×), but these are four different resists, not one resist at four doses.
 
-**ASML best resists with hexapole illumination:** 3.95 / 4.21 nm against 2.7 / 2.0 nm (+46% / +110%). Hexapole didn't help, so the gap to the best resists is resist chemistry, not illumination.
+**ASML best resists with hexapole illumination:** 3.95 / 4.21 nm against 2.7 / 2.0 nm (+46% / +110%). Hexapole didn't help, so the gap to the best resists is resist chemistry, not illumination. That fits the sources: both entries are non-CAR resists (see the Nov 25 correction), a chemistry v2 does not model.
 
 **Church et al. 2020 (IBM/Fractilia)** contributes two checks without new numbers to fit: SEM noise inflated their measured via LCDU by about 0.6 nm, which is why every comparison here uses stochastic-only or low-noise values where available; and their unbiased LCDU didn't change with CD, matching v2's flat size trend from 18 to 28 nm.
 
@@ -144,7 +153,8 @@ Every number reproduces within 2%, so the comparisons are not luck of the draw.
 | Maas et al. 2018, JM3 17(4) 041003 (ASML) | LCDU ∝ dose^−0.5 (threshold changes) vs dose^−0.33 (QE changes), metal-oxide model | Abstract |
 | Church et al. 2020, JM3 19(3) 034001 (IBM) | SEM noise inflated via LCDU by 0.6 nm; unbiased LCDU flat with CD | Abstract |
 | De Bisschop & Hansen 2022, JM3 21(3) 033201; Hansen 2018 | LCDU ∝ 1/ILS correlator; Gaussian-random-field models (method behind check 1) | Abstracts |
-| ASML, EUVL Workshop 2021 (euvlitho.com/2021/P3.pdf) | P40 dense holes need 79 mJ/cm² for < 10⁻⁶ defects at 0.33 NA (simulated, photon noise only) | Slides (also used in pass 1) |
+| van Schoot (ASML), *High-NA EUV progress and outlook*, EUVL Workshop 2021 (euvlitho.com/2021/P3.pdf) | P40 dense holes need 79 mJ/cm² for < 10⁻⁶ defects at 0.33 NA (simulated, photon noise only) | Slides (also used in pass 1) |
+| Santaclara et al. (ASML/imec), *Progress and outlook towards High-NA EUV resist*, EUVL Workshop 2021 (euvlitho.com/2021/P51.pdf) | Resist type for each P40 hexagonal pillars/CH entry (added Nov 25) | Slides |
 
 ### What pass 2 means for the project
 
@@ -175,7 +185,7 @@ Every number reproduces within 2%, so the comparisons are not luck of the draw.
 | CD 15 / 17.4 / 19.5 / 21.2 nm at 30 / 33 / 36 / 39 mJ/cm²; ~10% closing at 15 nm | Yen 2018 slides | Full slides read | Confirmed; simulations |
 | Dose-to-size 31.7 / 33.5 mJ/cm², 1σ LCDU 1.1 / 1.7 nm, NA 0.25, 60 nm film, quasar | Goethals et al. 2013 | Full slides read | Confirmed; corrected CDs |
 | 0.33 NA, 40 nm CAR: LCDU 2.4 / 2.6 / 2.7 / 3.0 / 3.6 nm at P40–P30, 63–73 mJ/cm² | ASML 2024 investor presentation (SEC exhibit 99.4) | Full text read | Confirmed numbers; measured vs simulated and pattern type not stated |
-| P40 CAR LCDU 2.7 / 2.2 / 2.1 / 2.0 nm at 66 / 65 / 61 / 53 mJ/cm² (2018–2021) | ASML, EUVL Workshop 2021 | Slides read | Confirmed numbers; conditions partly unknown |
+| P40 hexagonal pillars/CH LCDU 2.7 / 2.2 / 2.1 / 2.0 nm at 66 / 65 / 61 / 53 mJ/cm² (2018–2021) | ASML (van Schoot), EUVL Workshop 2021; Santaclara et al., EUVL Workshop 2021 | Slides read | Confirmed numbers. **Corrected Nov 25:** originally listed as CAR; the slides label 2018, 2019 and 2021 non-CAR and 2020 CAR |
 | P40 dense holes at 0.33 NA need 79 mJ/cm² for <10⁻⁶ defect rate | ASML, EUVL Workshop 2021 | Slides read | Confirmed; simulated |
 | 24 nm HP regular holes: LCDU 3.2 nm (small annular, 31 mJ/cm² resist) | van Ingen Schenau 2013 (ASML) | Slides via search | Confirmed numbers; sigma values assumed |
 | Cliffs "touch at around 1 ppm" at 40 nm pitch | imec via SemiWiki 2019 | Article text | Confirmed (dose not stated) |
