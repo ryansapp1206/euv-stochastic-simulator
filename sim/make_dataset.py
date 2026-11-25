@@ -234,7 +234,13 @@ def git_commit() -> str:
 
 
 def file_sha256(path: str) -> str:
-    return hashlib.sha256(open(path, "rb").read()).hexdigest()
+    """Digest of the file's text with newlines normalised to LF.
+
+    git checks source out with CRLF on Windows and LF on Linux, so hashing raw bytes
+    gives two different digests for identical code and makes the provenance check in
+    check_dataset.py fire on a platform difference. Normalising removes that.
+    """
+    return hashlib.sha256(open(path, "rb").read().replace(b"\r\n", b"\n")).hexdigest()
 
 
 def append(path: str, fields: list[str], rows: list[dict]):
