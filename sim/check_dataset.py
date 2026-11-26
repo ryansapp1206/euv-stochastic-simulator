@@ -87,8 +87,9 @@ def main(path):
     lab_nan = D[["mean_cd_nm", "sigma_cd_nm"]].isna().any(axis=1)
     bad_lab = int((lab_nan & (D.n_ok > 1)).sum())
     check("missing values", "PASS" if nan_f == 0 and bad_lab == 0 else "FAIL",
-          f"NaN features: {nan_f}; NaN labels where holes survived: {bad_lab}; rows with no surviving hole "
-          f"(labels NaN by design): {int((D.n_ok <= 1).sum())}")
+          f"NaN features: {nan_f}; NaN labels where holes survived: {bad_lab}; rows with no usable hole "
+          f"(every hole missing or merged; size labels NaN by design): {int((D.n_ok == 0).sum())}; "
+          f"rows with one usable hole (standard errors NaN): {int((D.n_ok == 1).sum())}")
 
     # ---- domain
     out = []
@@ -139,8 +140,17 @@ def main(path):
           f"at D0: LCDU {lc.min():.2f}-{lc.max():.2f} nm, median {lc.median():.2f} "
           f"(published typical CAR 2-5 nm)")
     nf = nom[(nom.p_missing > 0.01) | (nom.p_merged > 0.01)]
+    # does each failing resist have any swept dose where total losses stay at or under 1%?
+    loss = D.p_missing + D.p_merged
+    has_window = {rid: bool((loss[D.resist_id == rid] <= 0.01).any()) for rid in nf.resist_id}
+    n_win = sum(has_window.values())
+    cause = ("in every case because of merging" if (nf.p_merged > 0.01).all() and (nf.p_missing <= 0.01).all()
+             else f"{int((nf.p_missing > 0.01).sum())} by missing, {int((nf.p_merged > 0.01).sum())} by merging")
+    no_win = [rid for rid, w in has_window.items() if not w]
     check("failures at nominal dose", "PASS" if len(nf) <= 0.05 * len(nom) else "WARN",
-          f"{len(nf)} of {len(nom)} resists lose >1% of holes even at D0 (no process window; kept, flagged)")
+          f"{len(nf)} of {len(nom)} resists lose >1% of holes even at D0 ({cause}); "
+          f"{n_win} of them have another swept dose with <=1% total loss, {len(no_win)} have none"
+          + (f" (resist ids {', '.join(str(int(r)) for r in no_win)})" if no_win else "") + "; kept, flagged")
 
     # literature trend: LCDU ~ 1 / (NILS * sqrt(absorbed photons)) (ILS correlator, shot-noise scaling)
     x = 1 / (nom.nils * np.sqrt(nom.photons_abs_per_nm2))

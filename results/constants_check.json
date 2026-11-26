@@ -1,0 +1,102 @@
+{
+ "passed": 12,
+ "total": 12,
+ "checks": [
+  {
+   "check": "photon energy at 13.5 nm (eV)",
+   "ok": true,
+   "expected": 91.84014698755576,
+   "got": 91.83999999999999,
+   "max_rel_error": 1.6004716955205688e-06,
+   "note": "h c / lambda, CODATA"
+  },
+  {
+   "check": "photons per nm^2 per mJ/cm^2",
+   "ok": true,
+   "expected": 0.6796057366182657,
+   "got": 0.6796068243097522,
+   "max_rel_error": 1.6004742570990839e-06,
+   "note": ""
+  },
+  {
+   "check": "absorbed photons (Beer-Lambert)",
+   "ok": true,
+   "expected": 0.5740356988889593,
+   "got": 0.5740366691898089,
+   "max_rel_error": 1.7879245512224398e-06,
+   "note": ""
+  },
+  {
+   "check": "layer sum equals single-layer absorption",
+   "ok": true,
+   "expected": 0.5740366691898089,
+   "got": 0.574036649807822,
+   "max_rel_error": 1.2750133717027358e-07,
+   "note": ""
+  },
+  {
+   "check": "open frame images to 1.0",
+   "ok": true,
+   "expected": 1.0,
+   "got": 0.999999999999998,
+   "max_rel_error": 1.887379141862766e-15,
+   "note": ""
+  },
+  {
+   "check": "acid generation (Dill kinetics)",
+   "ok": true,
+   "expected": 1.3005509190261364,
+   "got": 1.3005509190261364,
+   "max_rel_error": 0.0,
+   "note": ""
+  },
+  {
+   "check": "low-dose limit: acids per photon = QE",
+   "ok": true,
+   "expected": 2.8,
+   "got": 2.800967216491699,
+   "max_rel_error": 0.00034543446132121304,
+   "note": ""
+  },
+  {
+   "check": "high-dose saturation: acid = rho_PAG t",
+   "ok": true,
+   "expected": 7.0,
+   "got": 7.0,
+   "max_rel_error": 0.0,
+   "note": ""
+  },
+  {
+   "check": "quencher neutralisation (net acid)",
+   "ok": true,
+   "expected": 0.006682270409364719,
+   "got": 0.006682270409364719,
+   "max_rel_error": 0.0,
+   "note": ""
+  },
+  {
+   "check": "deprotection 1 - exp(-K h)",
+   "ok": true,
+   "expected": 0.17760974273085595,
+   "got": 0.17760974273085595,
+   "max_rel_error": 0.0,
+   "note": ""
+  },
+  {
+   "check": "development threshold",
+   "ok": true,
+   "expected": 1.0,
+   "got": 1.0,
+   "max_rel_error": 0.0,
+   "note": "fraction of pixels that agree"
+  },
+  {
+   "check": "printed CD = 2 sqrt(area / pi)",
+   "ok": true,
+   "expected": 20.0585068271871,
+   "got": 20.0585068271871,
+   "max_rel_error": 0.0,
+   "note": "9 holes in the tile"
+  }
+ ]
+}
