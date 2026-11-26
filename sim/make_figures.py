@@ -36,7 +36,10 @@ ax.set_yticks(range(len(rows)), [x[0] for x in rows])
 ax.invert_yaxis()
 ax.set_xlabel("Hole-to-hole size variation, LCDU 3σ (nm)")
 ax.set_xlim(0, 7.5)
-ax.set_title("Simulator v2 matches both like-for-like references within 8%", loc="left", fontsize=11)
+# headline computed from the like-for-like rows, not typed in (pass 1 said "within 8%", since withdrawn)
+like = [(d["lcdu_3s"] - d["published_lcdu"]) / d["published_lcdu"] for _, d, comparable in rows if comparable]
+ax.set_title("Simulator v2 vs the two like-for-like references: " + " and ".join(f"{v:+.0%}" for v in like),
+             loc="left", fontsize=11)
 ax.legend(loc="upper right", frameon=False)
 fig.text(0.01, 0.01, "Grey band: ±20% of published. Grey diamonds: not like-for-like comparisons (see CALIBRATION.md).",
          fontsize=8, color="#555")
@@ -45,11 +48,13 @@ fig.savefig(RESULTS + "/calibration_lcdu.png", dpi=150)
 
 # ---- 2. CD vs dose (Yen 2018) ----------------------------------------------------------
 y = r["T5_yen2018"]["sweep"]
+yen = {30: 15.0, 33: 17.4, 36: 19.5, 39: 21.2}   # Yen 2018 slides: dose (mJ/cm2) -> mean CD (nm)
 fig, ax = plt.subplots(figsize=(5.2, 3.8))
-ax.plot([30, 33, 36, 39], [15.0, 17.4, 19.5, 21.2], "o-", color="black", label="Yen 2018 (ASML simulation)")
+ax.plot(list(yen), list(yen.values()), "o-", color="black", label="Yen 2018 (ASML simulation)")
 ax.plot([s["dose"] for s in y], [s["mean_cd"] for s in y], "D--", color=BLUE, label="simulator v2")
 ax.set_xlabel("Dose (mJ/cm²)"); ax.set_ylabel("Mean hole size (nm)")
-ax.set_title("Printed size vs dose matches ASML's simulation within 5%", loc="left", fontsize=11)
+worst = max(abs(s["mean_cd"] - yen[s["dose"]]) / yen[s["dose"]] for s in y if s["dose"] in yen)
+ax.set_title(f"Printed size vs dose matches ASML's simulation within {np.ceil(worst * 100):.0f}%", loc="left", fontsize=11)
 ax.legend(frameon=False)
 fig.tight_layout(); fig.savefig(RESULTS + "/calibration_cd_vs_dose.png", dpi=150)
 

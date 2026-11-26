@@ -6,7 +6,7 @@
 
 Simulator v2 produces realistic numbers for a typical chemically amplified resist. Hole-to-hole size variation (LCDU) lands between −14% and +29% across eight comparisons with typical processes (measured data, industry data and two other models). **Nov 10 audit: those eight points come from five distinct sources of mixed process type; only some are like-for-like. See the audit addendum in [VERIFICATION.md](VERIFICATION.md) for corrections and for new measured NA 0.33 CAR comparisons that agree to roughly ±30%.** The best modern resists do 30–50% better than the model. Printed size versus dose matches an ASML simulation within 5%, and every qualitative trend in the literature appears. The resist parameter that gets fitted (quencher loading) always lands inside its published range.
 
-The weakest part is the **absolute rate of missing holes**. The failure cliffs have the right shape and roughly the right level (consistent with imec's ~1 ppm floor at 40 nm pitch), but rates are uncertain by about an order of magnitude. Treat them as estimates.
+The weakest part is the **absolute rate of missing holes**. The failure cliffs have the right shape and roughly the right level (consistent with imec's report, via SemiWiki 2019, that the two failure cliffs touch around 1 ppm for a 40 nm pitch pattern), but rates are uncertain by about an order of magnitude. Treat them as estimates.
 
 ## What the model does
 
@@ -29,15 +29,15 @@ Every hole gets a printed size (equivalent-circle diameter of its largest connec
 | --- | --- | --- |
 | Absorptivity | 4.2 /µm | Naulleau et al. (Berkeley MPPM model); Fallica 2015 measured 4.2–5.3 /µm for organic resists |
 | Film thickness | 35 nm | Naulleau et al.; Fallica 2015 (25–45 nm) |
-| Acids per absorbed photon (QE) | 2.8 | Naulleau et al., JM3 2018 (2.8); "Extreme stochastic events" (3) |
-| PAG density | 0.20 /nm³ | Naulleau et al.; Mack 2011 (0.2) |
+| Acids per absorbed photon (QE) | 2.8 | Naulleau & Gallatin, JM3 2018 (2.8); "Extreme stochastic events" (3) |
+| PAG density | 0.20 /nm³ | Naulleau et al. (0.2); Naulleau & Gallatin, JM3 2018 (0.2) |
 | Protecting groups | 2 /nm³ | Naulleau et al. |
 | Electron blur σ | 1.7 nm | Electron range 4 nm (Naulleau, read as full width at half maximum); Bhattarai 2017: 1.8–2 nm |
 | Acid diffusion σ | 5.0 nm | Acid range 10–12 nm (Naulleau, read as full width at half maximum); Gronheid 2011: ~4–5 nm |
 | Quencher diffusion σ | 1.3 nm | Quencher range 3 nm (Naulleau, read as full width at half maximum) |
-| Deprotection × bake, K | 60 nm³ | Naulleau et al., JM3 2018: 1 nm³/s × ~60 s bake |
+| Deprotection × bake, K | 60 nm³ | Naulleau & Gallatin, JM3 2018: deprotection rate 1 nm³/s, × an assumed 60 s bake (the paper gives no bake time) |
 | Development threshold | 50% deprotected | Assumed (standard threshold model) |
-| Quencher density | **fitted** per case | Must land in the published 0.012–0.09 /nm³ range (Mack 2011; Naulleau; AIP Advances 2025) |
+| Quencher density | **fitted** per case | Must land in the published 0.012–0.09 /nm³ range (Naulleau & Gallatin 2018: 0.09; Naulleau et al.: 0.085; AIP Advances 2025: base 10–20% of PAG) |
 
 The phrase "range" in Naulleau et al. is interpreted as full width at half maximum. That interpretation makes all three blur values agree with independent measurements.
 
@@ -94,11 +94,12 @@ On one CPU core: about 2,000 holes per setting in 1.2–2.2 s (4× longer with f
 
 - Severi, Lorusso, De Simone, Mack 2021, *Measuring and analyzing contact hole variations in EUV lithography*, Proc. SPIE 11609
 - Naulleau, Bhattarai, Neureuther, *Understanding Extreme Stochastic Events in EUV Resists* (escholarship.org, qt3qr9g2g7)
-- Naulleau et al. 2018, *Relative importance of various stochastic terms and EUV patterning*, JM3 17(4) 041015
+- Naulleau & Gallatin 2018, *Relative importance of various stochastic terms and EUV patterning*, JM3 17(4) 041015
 - Goethals et al. 2013, *EUV resist evaluation and process optimization towards NXE:3300*, EUVL Symposium
 - Wang et al. 2019, *Progress in EUV resists for contact holes printing using EUV interference lithography*, Proc. SPIE 11177
 - Yen 2018, EUVL Workshop slides (euvlitho.com/2018/P3.pdf)
-- Mack 2019, *Metrics for stochastic scaling in EUV lithography*, Proc. SPIE; Mack 2011, *EUV stochastic quenching kinetics* (lithoguru.com)
+- Mack 2019, *Metrics for stochastic scaling in EUV lithography*, Proc. SPIE
+- (Nov 26: an earlier version also cited "Mack 2011, *EUV stochastic quenching kinetics*". No publication with that title could be found, so it was removed; the PAG and quencher values it was cited for are covered by Naulleau & Gallatin 2018 and the AIP Advances paper.)
 - Fallica et al. 2015, EUV absorption coefficients of resists (EUVL Symposium poster)
 - Bhattarai 2017, UC Berkeley thesis EECS-2017-125; Gronheid et al. 2011, JM3 10(3) 033004
 - *Impact of chemical stochastics in EUV photoresists on the pattern quality*, AIP Advances 15, 035236 (2025)
