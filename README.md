@@ -64,14 +64,15 @@ results/      figures, calibration and verification reports, QA reports, small C
   ml/                    cv_scores.csv, heldout_scores.csv, leakage_comparison.csv
 data/
   pilot/                 50-resist pilot dataset (committed)
-  full/, test/           full and held-out datasets (not committed; regenerate below)
+  full/, test/           full and held-out datasets (committed; can also be regenerated below)
 ```
 
 ## Run
 
 ```bash
 pip install -r requirements.txt
-python sim/test_simulator_v2.py   # ~35 s
+python -m pytest sim              # all 16 unit tests, ~50 s
+python sim/constants_check.py     # 12 independent constant and formula checks
 python sim/simulator_v2.py        # one quick dose-to-size example
 python sim/calibrate.py           # ~5 min
 python sim/make_figures.py

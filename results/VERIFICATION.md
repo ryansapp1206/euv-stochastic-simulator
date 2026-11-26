@@ -129,7 +129,7 @@ The cliff tails (rates of 10⁻⁴ to 0.2) were fitted as straight lines in log-
 | 50 mJ/cm² | 51.1 | 48.2 | 50.5 | 2 × 10⁻⁶ |
 | 80 mJ/cm² | 77.2 | 104.7 | 83.1 | 3 × 10⁻⁸ |
 
-A window with both rates below 10⁻⁶ opens for resists sized at roughly 55 mJ/cm² and above. ASML's simulation needs 79 mJ/cm² for the same goal, and imec measured cliffs touching around 1 ppm at this pitch. So v2 has the right order of magnitude but leans optimistic, consistent with the missing-hole comparisons above. Merging now needs a real bridge, so it starts at 160–180% of the sizing dose.
+A window with both rates below 10⁻⁶ opens for resists sized at roughly 55 mJ/cm² and above. ASML's simulation needs 79 mJ/cm² for the same goal, and imec reported the two failure cliffs touching around 1 ppm for a 40 nm pitch pattern (SemiWiki's summary does not say whether the pattern was holes or lines). So v2 has the right order of magnitude but leans optimistic, consistent with the missing-hole comparisons above. Merging now needs a real bridge, so it starts at 160–180% of the sizing dose.
 
 ### Fresh seeds, larger samples
 
@@ -188,7 +188,7 @@ Every number reproduces within 2%, so the comparisons are not luck of the draw.
 | P40 hexagonal pillars/CH LCDU 2.7 / 2.2 / 2.1 / 2.0 nm at 66 / 65 / 61 / 53 mJ/cm² (2018–2021) | ASML (van Schoot), EUVL Workshop 2021; Santaclara et al., EUVL Workshop 2021 | Slides read | Confirmed numbers. **Corrected Nov 25:** originally listed as CAR; the slides label 2018, 2019 and 2021 non-CAR and 2020 CAR |
 | P40 dense holes at 0.33 NA need 79 mJ/cm² for <10⁻⁶ defect rate | ASML, EUVL Workshop 2021 | Slides read | Confirmed; simulated |
 | 24 nm HP regular holes: LCDU 3.2 nm (small annular, 31 mJ/cm² resist) | van Ingen Schenau 2013 (ASML) | Slides via search | Confirmed numbers; sigma values assumed |
-| Cliffs "touch at around 1 ppm" at 40 nm pitch | imec via SemiWiki 2019 | Article text | Confirmed (dose not stated) |
+| Cliffs "touch at around 1 ppm" at 40 nm pitch | imec via SemiWiki 2019 | Article text | Confirmed (dose and feature type not stated) |
 | Absorptivity 4.2–5.3 /µm (CAR), 15–19 /µm (metal oxide); films 25–45 nm | Fallica 2015 | Full poster read | Confirmed |
 | ~2 acids per absorbed photon; electron blur 1.8–2 nm | Bhattarai 2017 | Full text read | Confirmed |
 | Total blur ~4 nm at lowest bake; acid diffusion target ~5 nm | Gronheid 2011 | Abstract | Confirmed |
