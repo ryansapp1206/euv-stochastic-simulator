@@ -82,10 +82,12 @@ A model that beats those R² values is fitting simulation noise.
 
 - **Split by resist_id** (scikit-learn `GroupKFold` or `GroupShuffleSplit`). The 8 rows of one resist share everything but dose, so a row-level split leaks.
 - **Features:** the layout, dose and resist columns, plus `photons_abs_per_nm2` and `nils` for the linear baseline. Never use `seed`, `resist_id` or any count, rate, mean or σ column as a feature.
+> The final pipeline (`notebooks/ml_pipeline_ryan.ipynb`) departs from this list on purpose in three places: it leaves out `photons_abs_per_nm2` and `nils` (they are computed from the settings), it does not weight rows, and it models the failure rate with plain regression on log10(rate) rather than a binomial loss. The report explains each choice and lists the binomial model as future work.
+
 - **Size targets:** `mean_cd_nm` and `sigma_cd_nm`, weighted by 1/SE². For σ, use rows with at least 100 printed holes, because near a cliff σ describes only the survivors.
 - **Failure targets:** missing = binomial, `n_missing` out of `n_holes`. Merging = binomial, `n_merge_events` out of `n_neighbor_pairs`. Fit log-odds with a binomial loss (logistic regression on counts); don't take the log of zero rates.
 - **Don't extrapolate** beyond the domain table, and say so when predicting rare-event rates below 1 in 1,800 per row.
-- **Absolute doses** run from 12 to 171 mJ/cm² (0.6× the lowest D0 to 1.9× the highest), wider than the 16–100 mJ/cm² the comparisons covered. Rows outside that band are the same physics pushed further, and are almost all failure-cliff rows. Filter on `dose_mjcm2` if a model should stay inside the checked band.
+- **Absolute doses** run from 12 to 169 mJ/cm² in the full dataset (0.6× the lowest D0 to 1.9× the highest), wider than the 16–100 mJ/cm² the comparisons covered. Rows outside that band are the same physics pushed further, and are almost all failure-cliff rows. Filter on `dose_mjcm2` if a model should stay inside the checked band.
 
 ## Known biases (from VERIFICATION.md)
 
@@ -99,14 +101,14 @@ Generated on the project PC (Ryan's 9800X3D, 8 cores, 32 GB) in **1 h 48 min**: 
 **2,520 accepted (84%), 20,160 rows**. Seed 20261116, simulator git `111048d`. QA report kept at
 `results/qa_full.json` and `results/qa_full.md`; **overall PASS**, no WARN or FAIL.
 
-The data itself is not in git (see `.gitignore`) — regenerate it with the command below, or restore
-from the project backup. Everything needed to reproduce it byte-for-byte is in `metadata.json`.
+The data is committed in `data/full/` (and the held-out set in `data/test/`). It can also be regenerated
+with the commands below; everything needed to reproduce it is in each folder's `metadata.json`.
 
 Results worth carrying into the report:
 
 | Check | Pilot (50 resists) | Full (2,520 resists) |
 | --- | --- | --- |
-| Monotonic dose response | 0 violations / 347 steps | **0 violations / 17,473 steps** |
+| Monotonic dose response (no drop in mean size beyond 3 standard errors) | 0 violations / 347 steps | **0 violations / 17,473 steps** |
 | Error bars vs repeat runs | 1.10 and 0.71 (15 replicates) | **1.03 and 1.05 (722 replicates)** |
 | Nominal LCDU | 2.53–4.88 nm, median 3.38 | 1.75–6.27 nm, median 3.36 (published typical CAR 2–5) |
 | MC vs semi-analytical | 0 / 50 outside 0.80–1.10 | **0 / 2,520 outside 0.80–1.10** |
@@ -114,11 +116,15 @@ Results worth carrying into the report:
 
 Three things the ML pipeline has to handle:
 
-- **52 rows have no surviving hole at all** (total collapse at the lowest doses). `mean_cd_nm` and
-  `sigma_cd_nm` are NaN by design. They are valid rows for the *failure* model (`p_missing` = 1) and
-  must be dropped from the size models.
-- **6 of 2,520 resists have no process window** — they lose >1% of holes even at their nominal dose.
-  Kept and flagged; they are real points in the domain, not errors.
+- **46 rows have no usable hole at all.** They sit at the highest doses (1.66–1.90× D0) on tight
+  pitches (32–41 nm), where every hole merged with a neighbour (`p_merged` = 1, `p_missing` = 0).
+  `mean_cd_nm` and `sigma_cd_nm` are NaN by design. They are valid rows for the *failure* model and
+  must be dropped from the size models. Another 6 rows have exactly one usable hole, so their standard
+  errors are NaN.
+- **6 of 2,520 resists lose >1% of holes even at their nominal dose**, in every case because of merging. Four of them
+  have another swept dose with ≤1% total loss; two (resist ids 1336 and 1959) have none, losing holes
+  to missing at lower doses and to merging at higher ones. Kept and flagged; they are real points in
+  the domain, not errors.
 - **480 rejections**: 431 needed quencher outside the published 0.012–0.09 range (both tails, 0.005 to
   0.165 — the pilot only ever hit the high tail), and 49 fell below the 15 nm minimum CD.
 
@@ -143,13 +149,14 @@ An independent held-out test set needs only a different seed — the Latin hyper
 is a genuinely separate design over the same domain, not a subset:
 
 ```bash
-python make_dataset.py --out ../data/test --n-resists 400 --workers 8 --seed 999
+python make_dataset.py --out ../data/test --n-resists 400 --workers 8 --seed 999 --replicate-every 0
 ```
 
 **`resist_id` restarts at 0 in every run.** `data/full` is 0–2999 and `data/test` is 0–399, so the two
 collide. If the files are ever concatenated, build a composite group key (`full_0142` vs `test_0142`)
 before any `GroupKFold`, or the held-out set silently stops being held out.
 
-- **Runtime:** about 34 s per sample on one core (42 s accepted, 12 s rejected). 1,500 samples give ~1,250 resists and ~10,000 rows: ~14 hours on one core, ~2 hours with 8 workers. With 1,000 samples (~6,600 rows) the time drops by a third.
+- **Runtime (actual, full run on the 9800X3D):** 3,000 samples took 14.4 core-hours, about 17 s per sample, which is 1 h 48 min with 8 workers.
+- **Runtime (pre-run estimate from the pilot):** about 34 s per sample on one core (42 s accepted, 12 s rejected). 1,500 samples give ~1,250 resists and ~10,000 rows: ~14 hours on one core, ~2 hours with 8 workers. With 1,000 samples (~6,600 rows) the time drops by a third.
 - **Resuming:** re-run the same command. It refuses to resume if the simulator or the settings changed.
 - Set `--workers` to the number of CPU cores, and allow about 0.5 GB of memory per worker (peak at 64 nm pitch). Tested here on Linux; it uses only standard multiprocessing, so it should also run on Windows, macOS and Colab. Colab's free tier has 2 cores, so 1,500 samples take ~7 hours; put `--out` on Google Drive so a run can resume across sessions.

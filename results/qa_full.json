@@ -39,7 +39,7 @@
   {
    "check": "missing values",
    "status": "PASS",
-   "detail": "NaN features: 0; NaN labels where holes survived: 0; rows with no surviving hole (labels NaN by design): 52"
+   "detail": "NaN features: 0; NaN labels where holes survived: 0; rows with no usable hole (every hole missing or merged; size labels NaN by design): 46; rows with one usable hole (standard errors NaN): 6"
   },
   {
    "check": "inside the verified domain",
@@ -74,7 +74,7 @@
   {
    "check": "failures at nominal dose",
    "status": "PASS",
-   "detail": "6 of 2520 resists lose >1% of holes even at D0 (no process window; kept, flagged)"
+   "detail": "6 of 2520 resists lose >1% of holes even at D0 (in every case because of merging); 4 of them have another swept dose with <=1% total loss, 2 have none (resist ids 1336, 1959); kept, flagged"
   },
   {
    "check": "LCDU follows image quality and dose",

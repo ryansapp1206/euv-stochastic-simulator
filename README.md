@@ -15,6 +15,7 @@ All Phase 2 work is complete.
 - [x] Calibration against published data (`results/CALIBRATION.md`)
 - [x] Verification, two passes plus a Nov 25 source re-check: sources, real-world data, another simulator, a semi-analytical check (`results/VERIFICATION.md`)
 - [x] Unit tests: 16 (`sim/test_simulator_v2.py`, `sim/test_make_dataset.py`)
+- [x] Independent constants and formula check: 12 of 12 match (`sim/constants_check.py`)
 - [x] Dataset generator with built-in quality checks; pilot passed (`results/DATASET.md`)
 - [x] Full dataset: 3,000 resists sampled by Latin hypercube, 2,520 accepted, 20,160 rows; QA passed with no warnings (`results/qa_full.md`)
 - [x] Held-out test set: 400 resists from a different seed, 337 accepted, 2,696 rows
@@ -50,6 +51,7 @@ sim/
   check_dataset.py       dataset quality checks -> data/<name>/qa_report.md
   replicate_check.py     re-runs dataset rows to test regeneration and error bars
   optics_check.py, corner_check.py, dispersion_check.py   final pre-dataset checks
+  constants_check.py     re-derives 12 constants and per-stage formulas -> results/constants_check.json
   test_make_dataset.py   generator tests
   make_figures.py        calibration figures -> results/*.png
   make_verification_figure.py   parity plot -> results/verification_parity.png
@@ -62,14 +64,15 @@ results/      figures, calibration and verification reports, QA reports, small C
   ml/                    cv_scores.csv, heldout_scores.csv, leakage_comparison.csv
 data/
   pilot/                 50-resist pilot dataset (committed)
-  full/, test/           full and held-out datasets (not committed; regenerate below)
+  full/, test/           full and held-out datasets (committed; can also be regenerated below)
 ```
 
 ## Run
 
 ```bash
 pip install -r requirements.txt
-python sim/test_simulator_v2.py   # ~35 s
+python -m pytest sim              # all 16 unit tests, ~50 s
+python sim/constants_check.py     # 12 independent constant and formula checks
 python sim/simulator_v2.py        # one quick dose-to-size example
 python sim/calibrate.py           # ~5 min
 python sim/make_figures.py
@@ -77,7 +80,7 @@ python sim/make_figures.py
 # datasets (see results/DATASET.md); about 1 h 50 min for the full set on 8 cores
 cd sim
 python make_dataset.py --out ../data/full --n-resists 3000 --workers 8
-python make_dataset.py --out ../data/test --n-resists 400 --workers 8 --seed 999
+python make_dataset.py --out ../data/test --n-resists 400 --workers 8 --seed 999 --replicate-every 0
 python check_dataset.py ../data/full
 
 # models: open notebooks/ml_pipeline_ryan.ipynb and run all cells
