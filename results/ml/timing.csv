@@ -1,0 +1,7 @@
+measure,value
+"simulator, seconds per 1,800-hole recipe (median)",1.8665847419999864
+"simulator, seconds per 1,800-hole recipe (min)",0.6432192219999706
+"simulator, seconds per 1,800-hole recipe (max)",2.728418204000036
+"simulator, hours for 3 million holes (median)",0.8641596027777715
+"neural net, microseconds per recipe in a batch",1.0283257638888703
+"neural net, milliseconds for a single call",0.793823499999462

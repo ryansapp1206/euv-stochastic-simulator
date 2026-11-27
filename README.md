@@ -59,9 +59,10 @@ sim/
   simulator.py           v1 prototype (kept for reference)
   sweep.py, lcdu_check.py, stages.py   v1 scripts
 notebooks/
-  ml_pipeline_ryan.ipynb feature selection, grouped CV, held-out test, leakage check -> results/ml/
+  ml_pipeline_ryan.ipynb feature selection, grouped CV, held-out test, leakage check, speed -> results/ml/
 results/      figures, calibration and verification reports, QA reports, small CSV/JSON
-  ml/                    cv_scores.csv, heldout_scores.csv, heldout_failure_split.csv, leakage_comparison.csv
+  ml/                    cv_scores.csv, heldout_scores.csv, heldout_failure_split.csv, leakage_comparison.csv,
+                         heldout_parity.png (predicted vs actual), timing.csv (simulator vs model speed)
 data/
   pilot/                 50-resist pilot dataset (committed)
   full/, test/           full and held-out datasets (committed; can also be regenerated below)
