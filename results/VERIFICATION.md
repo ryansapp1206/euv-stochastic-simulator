@@ -18,7 +18,7 @@ Re-checking the sources against the report found two errors in this file and its
 
 | What was wrong | What the source shows | Fixed in |
 | --- | --- | --- |
-| The ASML 2018 / 2021 P40 points (2.7 / 2.0 nm) were listed as "P40 CAR LCDU" and called the best CAR resists | The ASML slide (van Schoot, EUVL Workshop 2021, slide 28) and the underlying imec/ASML talk (Santaclara et al., EUVL Workshop 2021, P51, slide 7) label the 2018 and 2021 entries **non-CAR**, for **P40 hexagonal pillars/CH**. The 2020 entry (2.1 nm) is the CAR one. The slide text is partly garbled, so this is the best reading; the Nov 10 audit reached the same conclusion for 2021. | Bottom line, pass 2 table, "ASML best resists" paragraph, source checks below, parity figure labels |
+| The ASML 2018 / 2021 P40 points (2.7 / 2.0 nm) were listed as "P40 CAR LCDU" and called the best CAR resists | The ASML slide (van Schoot, EUVL Workshop 2021, slide 28) and the underlying imec/ASML talk (Santaclara et al., EUVL Workshop 2021, P51, slide 7) label the 2018 and 2021 entries **non-CAR**, for **P40 hexagonal pillars/CH**. The 2020 entry (2.1 nm) is the CAR one. The slide text is partly garbled, so this is the best reading; the Nov 10 audit reached the same conclusion for 2021. | Bottom line, pass 2 table, "ASML best resists" paragraph, source checks below, parity figure labels, pass 1 table |
 | Parity figure headline said "−14% to +31%" | The plotted points give −14% to +29% (ASML P32 is the maximum), matching every table here. The headline was typed in by hand. | `make_verification_figure.py` now computes the headline from the data |
 
 **Safe description for the project:** "a literature-parameterized stochastic simulator that reproduces published hole-size variation for typical CAR processes within about ±30%, cross-checked against an independent semi-analytical model and a published commercial-simulator result, with order-of-magnitude (likely optimistic) failure-rate estimates." It should not be described as matching any specific fab or resist.
@@ -205,7 +205,7 @@ Every number reproduces within 2%, so the comparisons are not luck of the draw.
 | Goethals 2013, 26 nm holes, NA 0.25 | Measured total | 3.3 nm | 2.75 nm | −17% (about +6% if ~80% of the total is stochastic, as in Severi) |
 | ASML 2024, P40 / P36 / P34 / P32 | Industry, conditions partly unknown | 2.4 / 2.6 / 2.7 / 3.0 nm | 2.93 / 3.03 / 3.07 / 3.80 nm | +22% / +16% / +14% / +27% |
 | ASML 2024, P30 | Industry, near resolution limit | 3.6 nm | 5.48 nm | +52%; v2's square-array setup is past its limit (26% merged) |
-| ASML best CAR 2018 / 2021, P40 | Industry; hexagonal pattern approximated | 2.7 / 2.0 nm | 3.63 / 3.83 nm | +35% / +92% |
+| ASML best resists 2018 / 2021, P40 | Industry; non-CAR per the slides; hexagonal pattern approximated | 2.7 / 2.0 nm | 3.63 / 3.83 nm | +35% / +92% |
 | Naulleau model, 16 nm HP | Published model | 3.45 nm | 3.55 nm | +3% |
 | Goethals 2013, 24 nm (no process window) | Measured total | 5.1 nm | 2.76 nm | Not comparable |
 | Wang 2019 (interference lithography) | Measured, different tool | 2.2–2.3 nm | 4.5 nm | Not comparable |
